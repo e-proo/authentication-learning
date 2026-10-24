@@ -3,7 +3,12 @@
   "name": "e-proo/logistics-platform",
   "type": "project",
   "description": "Modular logistics, commerce, marketing, and AI platform",
-  "keywords": ["laravel", "logistics", "commerce", "multi-tenant"],
+  "keywords": [
+    "laravel",
+    "logistics",
+    "commerce",
+    "multi-tenant"
+  ],
   "license": "proprietary",
   "require": {
     "php": "^8.3",
@@ -37,7 +42,11 @@
       "@php artisan migrate --force"
     ],
     "test": "@php artisan test",
-    "lint": "pint --test"
+    "lint": "pint --test",
+    "post-autoload-dump": [
+      "Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump",
+      "@php artisan package:discover --ansi"
+    ]
   },
   "config": {
     "optimize-autoloader": true,
