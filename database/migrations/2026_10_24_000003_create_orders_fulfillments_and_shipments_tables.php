@@ -218,8 +218,6 @@ return new class extends Migration
                 ->references(['organization_id', 'id'])->on('shipments')->cascadeOnDelete();
             $table->index(['shipment_id', 'occurred_at']);
         });
-    }
-
 
         // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
         DB::statement('ALTER TABLE price_list_items ADD CONSTRAINT price_list_items_minimum_quantity_positive CHECK (minimum_quantity > 0)');
@@ -229,6 +227,7 @@ return new class extends Migration
         DB::statement('ALTER TABLE stock_reservations ADD CONSTRAINT stock_reservations_quantity_positive CHECK (quantity > 0)');
         DB::statement('ALTER TABLE fulfillment_items ADD CONSTRAINT fulfillment_items_quantity_positive CHECK (quantity > 0)');
         DB::statement('ALTER TABLE shipment_items ADD CONSTRAINT shipment_items_quantity_positive CHECK (quantity > 0)');
+    }
 
     public function down(): void
     {
