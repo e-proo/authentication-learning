@@ -30,6 +30,10 @@ Apps share identity, domain APIs, canonical shipment/order events and authorizat
 - [Applications and workspaces architecture](docs/APPLICATIONS_AND_WORKSPACES.md) — defines separate products, audiences, boundaries and cross-application invariants.
 - [Driver Companion application specification](docs/DRIVER_COMPANION_SPEC.md) — dedicated mobile app scope including offline workflow, scans, proof, COD, cash handover, vehicle checks, returns and release acceptance gates.
 - [Branch, Office, Depot and Hub specification](docs/BRANCH_OFFICE_HUB_SPEC.md) — counter booking, receiving, sortation, manifests, transfers, customer pickup, cash desk, investigation and reporting.
+- [WMS, TMS and Fleet specifications](docs/WMS_TMS_FLEET_SPEC.md) — independent warehouse, transportation/linehaul, and fleet/workshop products.
+- [Branch & Parcel Office detailed specification](docs/BRANCH_OFFICE_OPERATIONS_SPEC.md) — additional acceptance tests and counter/custody/cash workflows.
+- [Application portfolio preview](preview.html) — directory of separate apps/workspaces, not an operational dashboard.
+- [Standalone Driver Companion preview](driver-app-preview.html) — interactive mobile-first prototype with task, route, COD, inspection, return and offline/sync mock flows; not connected to the backend.
 - [Delivery roadmap](docs/ROADMAP.md) — implementation stages with clear status labels.
 
 The benchmark covers representative products, not literally every logistics application in the market. Feature research is a scope baseline; interviews with actual drivers, branch teams, dispatchers, warehouse operators, cashiers, finance, merchants and customers remain necessary. Specifications are **not** claims that these features already exist in code.
@@ -41,7 +45,7 @@ The benchmark covers representative products, not literally every logistics appl
 - **API:** REST under `/api/v1`
 - **Authentication:** Laravel Sanctum bearer tokens
 - **Backend pattern:** modular monolith with explicit domain boundaries
-- **Frontend:** dedicated application experiences are planned; the current `preview.html` is a design prototype only, not the finished Vue application and not connected to the API.
+- **Frontend:** the current `preview.html` is an application directory; `driver-app-preview.html` is a standalone Driver Companion interaction prototype. Both are design-only, use sample data and are not connected to the API. Production apps and role-specific interfaces remain unimplemented.
 
 ## Backend foundations currently present
 
