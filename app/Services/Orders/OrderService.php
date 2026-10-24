@@ -162,11 +162,19 @@ class OrderService
                 }
 
                 $unitPrice = (int) $price->unit_price_minor;
-                $lineTotal = $unitPrice * $quantity;
+                $maximumAmount = 9000000000000000;
 
-                if ($lineTotal < 0 || $lineTotal > 9000000000000000) {
+                if ($unitPrice > intdiv($maximumAmount, $quantity)) {
                     throw ValidationException::withMessages([
                         "items.$index.quantity" => ['The calculated line total is out of range.'],
+                    ]);
+                }
+
+                $lineTotal = $unitPrice * $quantity;
+
+                if ($subtotal > $maximumAmount - $lineTotal) {
+                    throw ValidationException::withMessages([
+                        'items' => ['The calculated order total is out of range.'],
                     ]);
                 }
 
@@ -182,12 +190,6 @@ class OrderService
                     'sku_snapshot' => $variant->sku,
                     'variant_name_snapshot' => $variant->name,
                 ];
-            }
-
-            if ($subtotal > 9000000000000000) {
-                throw ValidationException::withMessages([
-                    'items' => ['The order total is out of range.'],
-                ]);
             }
 
             $order = Order::query()->create([
