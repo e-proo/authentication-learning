@@ -41,6 +41,7 @@ Apps share identity, domain APIs, canonical shipment/order events and authorizat
 - [Branch & Parcel Office detailed specification](docs/BRANCH_OFFICE_OPERATIONS_SPEC.md) — additional acceptance tests and counter/custody/cash workflows.
 - [Application portfolio preview](preview.html) — launcher for separate products, not an operational dashboard.
 - [Standalone Driver Companion preview](driver-app-preview.html) — interactive mobile-first prototype with task, route, COD, inspection, return and offline/sync mock flows; not connected to the backend.
+- [Standalone Branch & Office Operations preview](branch-office-preview.html) — separate desktop/tablet prototype for counter bookings, inbound, sorting, manifests, inter-branch transfers, dispatch handoff, customer pickup, cash desk, claims, staff and site reporting; sample data only.
 - [Delivery roadmap](docs/ROADMAP.md) — implementation stages with clear status labels.
 
 The benchmark covers representative products, not literally every logistics application in the market. Feature research is a scope baseline; interviews with actual drivers, branch teams, dispatchers, warehouse operators, cashiers, finance, merchants and customers remain necessary. Specifications are **not** claims that these features already exist in code.
