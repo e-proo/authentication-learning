@@ -178,7 +178,8 @@ class PaymentService
                 throw new ConflictHttpException('Cash-on-delivery can only be collected after delivery is recorded.');
             }
 
-            if ($locked->payment_method === 'bank_transfer' && trim((string) $reference) === '') {
+            $confirmedReference = trim((string) ($reference ?? $locked->reference));
+            if ($locked->payment_method === 'bank_transfer' && $confirmedReference === '') {
                 throw ValidationException::withMessages([
                     'reference' => ['A bank transfer reference is required before reconciliation.'],
                 ]);
@@ -186,7 +187,7 @@ class PaymentService
 
             $previous = $locked->status;
             $locked->status = 'paid';
-            $locked->reference = $reference ?? $locked->reference;
+            $locked->reference = $confirmedReference !== '' ? $confirmedReference : $locked->reference;
             $locked->verified_by = $actor->id;
             $locked->paid_at = now();
             $locked->save();
