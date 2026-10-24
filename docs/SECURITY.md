@@ -27,3 +27,8 @@
 - Delivery-address, product, SKU, unit-price, and currency snapshots are preserved on the order.
 
 This is a foundation rather than a complete security certification. Add branch-scoped policies, rate limiting on all state-changing endpoints, audit coverage, webhook verification, and external penetration testing before production.
+
+
+## Audit trail
+
+The shared audit logger records organization creation, order create/cancel, inventory adjustments, fulfillment creation/packing, shipment creation/state transitions, invoice issuance, and payment record/confirmation. Records include actor, organization, subject, request ID, IP/user-agent when available, and narrowly scoped action metadata. The logger drops metadata keys that resemble credentials/secrets; callers should still allowlist user-supplied metadata and avoid logging full addresses or free-form sensitive details.
