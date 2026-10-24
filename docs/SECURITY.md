@@ -10,7 +10,9 @@
 - Keep payment card data out of this platform unless a compliant provider/tokenization flow requires it.
 - AI tools must use registered application services, never arbitrary SQL, shell, or unrestricted URLs.
 - Require explicit approval for configured sensitive actions such as refunds, price changes, publishing campaigns, or payouts.
-- Apply rate limits to authentication, public quote forms, webhooks, and AI endpoints.
+- Apply rate limits to authentication, all authenticated API endpoints, public quote forms, webhooks, and AI endpoints.
+- Configure CORS to allow only explicitly listed frontend origins; bearer-token APIs should not require cross-origin cookies by default.
+- Restrict user-supplied metadata to documented keys and never store credentials or payment secrets in metadata.
 - Use HTTPS in deployed environments and disable debug output in production.
 - Back up PostgreSQL and test restoration regularly.
 
