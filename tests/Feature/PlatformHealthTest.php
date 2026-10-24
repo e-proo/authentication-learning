@@ -383,6 +383,106 @@ class PlatformHealthTest extends TestCase
         ]);
     }
 
+    public function test_campaign_requires_approval_before_internal_publication_and_tracks_metrics(): void
+    {
+        [$user, $organization, $store] = $this->createCommerceFixture();
+
+        $campaign = $this->actingAs($user, 'sanctum')->postJson(
+            "/api/v1/organizations/{$organization->id}/campaigns",
+            [
+                'store_id' => $store->id,
+                'name' => 'Internal Store Launch',
+                'description' => 'Test campaign for the workflow.',
+                'objective' => 'sales',
+                'currency' => 'YER',
+                'budget_minor' => 50000,
+                'audience_snapshot' => [
+                    'buyer_type' => 'B2C',
+                    'geographic_regions' => ['Sanaa'],
+                    'segment_name' => 'Retail customers',
+                ],
+            ],
+        )->assertCreated()->assertJsonPath('data.status', 'draft');
+        $campaignId = $campaign->json('data.id');
+
+        $channel = $this->postJson(
+            "/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/channels",
+            [
+                'channel_key' => 'internal',
+                'publish_mode' => 'internal',
+                'settings_snapshot' => ['tracking_source' => 'wasl-test'],
+            ],
+        )->assertCreated()->assertJsonPath('data.status', 'draft');
+        $channelId = $channel->json('data.id');
+
+        $creative = $this->postJson(
+            "/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/creatives",
+            [
+                'campaign_channel_id' => $channelId,
+                'creative_type' => 'text',
+                'name' => 'Launch text',
+                'headline' => 'Shop local',
+                'primary_text' => 'Discover products from local businesses.',
+                'call_to_action' => 'shop_now',
+                'destination_url' => 'https://example.test/store',
+            ],
+        )->assertCreated()->assertJsonPath('data.status', 'draft');
+        $creativeId = $creative->json('data.id');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/submit", [
+            'notes' => 'Ready for marketing review.',
+        ])->assertOk()->assertJsonPath('data.status', 'in_review');
+
+        $this->postJson(
+            "/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/creatives/{$creativeId}/submit",
+            ['notes' => 'Creative submitted.'],
+        )->assertOk()->assertJsonPath('data.status', 'in_review');
+
+        $this->postJson(
+            "/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/creatives/{$creativeId}/approve",
+            ['notes' => 'Copy reviewed.'],
+        )->assertOk()->assertJsonPath('data.status', 'approved');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/approve", [
+            'notes' => 'Approved for internal publication.',
+        ])->assertOk()->assertJsonPath('data.status', 'approved');
+
+        $this->postJson(
+            "/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/channels/{$channelId}/publish",
+            ['notes' => 'Published to internal storefront.'],
+        )->assertOk()->assertJsonPath('data.status', 'published');
+
+        $metricDate = now()->subDay()->toDateString();
+        $this->postJson(
+            "/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/channels/{$channelId}/metrics",
+            [
+                'metric_date' => $metricDate,
+                'impressions' => 100,
+                'clicks' => 12,
+                'conversions' => 3,
+                'spend_minor' => 500,
+                'attributed_revenue_minor' => 2500,
+                'source' => 'manual',
+            ],
+        )->assertOk()->assertJsonPath('data.impressions', 100);
+
+        $this->getJson("/api/v1/organizations/{$organization->id}/campaigns/{$campaignId}/metrics")
+            ->assertOk()
+            ->assertJsonPath('totals.impressions', 100)
+            ->assertJsonPath('totals.clicks', 12)
+            ->assertJsonPath('totals.conversions', 3)
+            ->assertJsonPath('totals.spend_minor', 500)
+            ->assertJsonPath('totals.attributed_revenue_minor', 2500);
+
+        $this->assertDatabaseHas('campaigns', ['id' => $campaignId, 'status' => 'active']);
+        $this->assertDatabaseHas('campaign_channels', ['id' => $channelId, 'status' => 'published']);
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $organization->id,
+            'action' => 'campaign.internal_channel_published',
+            'subject_id' => (string) $channelId,
+        ]);
+    }
+
     public function test_invoice_and_partial_offline_payments_reconcile_order_totals(): void
     {
         [$user, $organization, $store, $priceList, $variant, $warehouse] = $this->createCommerceFixture();
@@ -515,6 +615,9 @@ class PlatformHealthTest extends TestCase
             'transport.manage',
             'delivery_tasks.view',
             'delivery_tasks.manage',
+            'marketing.view',
+            'marketing.manage',
+            'marketing.approve',
         ])->map(fn (string $slug) => Permission::query()->create([
             'name' => str($slug)->replace('.', ' ')->headline()->toString(),
             'slug' => $slug,
