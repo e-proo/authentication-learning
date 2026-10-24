@@ -201,6 +201,149 @@ class PlatformHealthTest extends TestCase
         ]);
     }
 
+    public function test_last_mile_delivery_task_drives_shipment_to_delivery_with_evidence(): void
+    {
+        [$user, $organization, $store, $priceList, $variant, $warehouse] = $this->createCommerceFixture();
+
+        $order = $this->actingAs($user, 'sanctum')->postJson(
+            "/api/v1/organizations/{$organization->id}/orders",
+            [
+                'store_id' => $store->id,
+                'price_list_id' => $priceList->id,
+                'items' => [[
+                    'product_variant_id' => $variant->id,
+                    'warehouse_id' => $warehouse->id,
+                    'quantity' => 2,
+                ]],
+                'shipping_address' => [
+                    'name' => 'Task Recipient',
+                    'phone' => '+967700000002',
+                    'country_code' => 'YE',
+                    'city' => 'Sanaa',
+                    'address_line1' => 'Delivery task street',
+                ],
+            ],
+        )->assertCreated();
+        $orderId = $order->json('data.id');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/orders/{$orderId}/fulfillments")
+            ->assertCreated();
+        $fulfillmentId = Fulfillment::query()
+            ->where('organization_id', $organization->id)
+            ->where('order_id', $orderId)
+            ->value('id');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/fulfillments/{$fulfillmentId}/pack")
+            ->assertOk();
+
+        $shipment = $this->postJson(
+            "/api/v1/organizations/{$organization->id}/fulfillments/{$fulfillmentId}/shipments",
+            ['carrier_type' => 'internal', 'carrier_name' => 'Test Fleet'],
+        )->assertCreated();
+        $shipmentId = $shipment->json('data.id');
+
+        $driver = $this->postJson("/api/v1/organizations/{$organization->id}/drivers", [
+            'driver_code' => 'DRIVER-TEST-01',
+            'display_name' => 'Test Driver',
+            'phone' => '+967700000003',
+            'driver_type' => 'employee',
+        ])->assertCreated();
+        $driverId = $driver->json('data.id');
+
+        $vehicle = $this->postJson("/api/v1/organizations/{$organization->id}/vehicles", [
+            'vehicle_code' => 'VAN-TEST-01',
+            'registration_plate' => 'TEST-PLATE-01',
+            'vehicle_type' => 'van',
+            'capacity_kg' => 900,
+        ])->assertCreated();
+        $vehicleId = $vehicle->json('data.id');
+
+        $trip = $this->postJson("/api/v1/organizations/{$organization->id}/transport-trips", [
+            'trip_type' => 'last_mile',
+            'origin' => [
+                'name' => 'Main Warehouse',
+                'city' => 'Sanaa',
+                'country_code' => 'YE',
+                'address_line1' => 'Warehouse street',
+            ],
+            'destination' => [
+                'name' => 'Customer',
+                'city' => 'Sanaa',
+                'country_code' => 'YE',
+                'address_line1' => 'Delivery task street',
+            ],
+        ])->assertCreated()->assertJsonPath('data.status', 'planned');
+        $tripId = $trip->json('data.id');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/transport-trips/{$tripId}/assign", [
+            'driver_id' => $driverId,
+            'vehicle_id' => $vehicleId,
+        ])->assertOk()->assertJsonPath('data.status', 'assigned');
+
+        $task = $this->postJson("/api/v1/organizations/{$organization->id}/delivery-tasks", [
+            'task_type' => 'last_mile',
+            'shipment_id' => $shipmentId,
+            'location' => [
+                'name' => 'Customer',
+                'city' => 'Sanaa',
+                'country_code' => 'YE',
+                'address_line1' => 'Delivery task street',
+            ],
+            'recipient_name' => 'Task Recipient',
+            'recipient_phone' => '+967700000002',
+        ])->assertCreated()->assertJsonPath('data.status', 'queued');
+        $taskId = $task->json('data.id');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/delivery-tasks/{$taskId}/assign", [
+            'driver_id' => $driverId,
+            'transport_trip_id' => $tripId,
+            'sequence_number' => 1,
+        ])->assertOk()->assertJsonPath('data.status', 'assigned');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/transport-trips/{$tripId}/depart", [])
+            ->assertOk()->assertJsonPath('data.status', 'departed');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/delivery-tasks/{$taskId}/events", [
+            'status' => 'en_route',
+            'location' => 'Dispatch gate',
+        ])->assertOk()->assertJsonPath('data.status', 'en_route');
+
+        $this->assertDatabaseHas('shipments', ['id' => $shipmentId, 'status' => 'out_for_delivery']);
+        $this->assertDatabaseHas('inventory_balances', [
+            'warehouse_id' => $warehouse->id,
+            'product_variant_id' => $variant->id,
+            'on_hand' => 8,
+            'reserved' => 0,
+        ]);
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/delivery-tasks/{$taskId}/events", [
+            'status' => 'arrived',
+            'location' => 'Customer gate',
+        ])->assertOk()->assertJsonPath('data.status', 'arrived');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/delivery-tasks/{$taskId}/events", [
+            'status' => 'completed',
+            'proof_reference' => 'POD-TEST-0001',
+            'recipient_name' => 'Task Recipient',
+            'recipient_phone' => '+967700000002',
+            'location' => 'Customer address',
+            'notes' => 'Delivery completed.',
+        ])->assertOk()->assertJsonPath('data.status', 'completed');
+
+        $this->assertDatabaseHas('shipments', ['id' => $shipmentId, 'status' => 'delivered']);
+        $this->assertDatabaseHas('orders', ['id' => $orderId, 'status' => 'delivered']);
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/transport-trips/{$tripId}/complete", [
+            'notes' => 'All assigned tasks completed.',
+        ])->assertOk()->assertJsonPath('data.status', 'completed');
+
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $organization->id,
+            'action' => 'delivery_task.completed',
+            'subject_id' => (string) $taskId,
+        ]);
+    }
+
     public function test_idempotency_key_does_not_create_duplicate_orders_or_reservations(): void
     {
         [$user, $organization, $store, $priceList, $variant, $warehouse] = $this->createCommerceFixture();
@@ -369,6 +512,9 @@ class PlatformHealthTest extends TestCase
             'finance.manage',
             'returns.view',
             'returns.manage',
+            'transport.manage',
+            'delivery_tasks.view',
+            'delivery_tasks.manage',
         ])->map(fn (string $slug) => Permission::query()->create([
             'name' => str($slug)->replace('.', ' ')->headline()->toString(),
             'slug' => $slug,
