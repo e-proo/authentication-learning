@@ -21,7 +21,7 @@ Supported methods at this stage:
 - cash_on_delivery: confirmation is allowed only after the order has a delivered status.
 - online: may be recorded as pending but cannot be confirmed manually. A provider adapter, signed webhook verification, replay protection, and reconciliation process must be implemented before enabling live online payment.
 
-On successful offline confirmation, a payment event is appended, the invoice paid total/status is recomputed from paid payments, and the order payment status is updated. Partial payments are supported.
+On successful offline confirmation, a payment event and sanitized audit record are appended, the invoice paid total/status is recomputed from paid payments, and the order payment status is updated. Partial payments are supported.
 
 ## Not implemented
 
