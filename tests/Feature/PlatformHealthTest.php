@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\\Feature;
 
-use Tests\TestCase;
+use Tests\\TestCase;
 
 class PlatformHealthTest extends TestCase
 {
@@ -19,6 +19,8 @@ class PlatformHealthTest extends TestCase
         $this->getJson('/api/v1/about')
             ->assertOk()
             ->assertJsonPath('status', 'foundation')
-            ->assertJsonFragment(['identity', 'organizations', 'catalog']);
+            ->assertJsonPath('modules.0', 'identity')
+            ->assertJsonPath('modules.1', 'organizations')
+            ->assertJsonPath('modules.2', 'catalog');
     }
 }
