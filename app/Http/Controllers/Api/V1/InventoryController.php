@@ -25,7 +25,10 @@ class InventoryController extends Controller
             'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
             'quantity_delta' => ['required', 'integer', 'between:-1000000,1000000', 'not_in:0'],
             'movement_type' => ['required', Rule::in(['opening_balance', 'restock', 'correction', 'damage', 'write_off'])],
-            'metadata' => ['nullable', 'array'],
+            'metadata' => ['nullable', 'array:source,reason,reference'],
+            'metadata.source' => ['nullable', 'string', 'max:80'],
+            'metadata.reason' => ['nullable', 'string', 'max:500'],
+            'metadata.reference' => ['nullable', 'string', 'max:180'],
         ]);
 
         $warehouse = Warehouse::query()->where('organization_id', $organization->id)
