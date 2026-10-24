@@ -140,6 +140,65 @@ class PlatformHealthTest extends TestCase
             'movement_type' => 'shipment_dispatch',
             'quantity_delta' => -2,
         ]);
+
+        $returnResponse = $this->postJson(
+            "/api/v1/organizations/{$organization->id}/orders/{$orderId}/returns",
+            [
+                'reason' => 'damaged',
+                'notes' => 'Return workflow integration test.',
+                'items' => [[
+                    'order_item_id' => $orderItemId,
+                    'quantity' => 1,
+                    'reason' => 'Damaged packaging',
+                ]],
+            ],
+        )->assertCreated()->assertJsonPath('data.status', 'requested');
+
+        $returnCaseId = $returnResponse->json('data.id');
+        $returnItemId = $returnResponse->json('data.items.0.id');
+
+        $this->postJson(
+            "/api/v1/organizations/{$organization->id}/returns/{$returnCaseId}/approve",
+            ['notes' => 'Approved after inspection.'],
+        )->assertOk()->assertJsonPath('data.status', 'approved');
+
+        $this->postJson(
+            "/api/v1/organizations/{$organization->id}/returns/{$returnCaseId}/items/{$returnItemId}/receive",
+            [
+                'quantity_received' => 1,
+                'disposition' => 'restock',
+                'warehouse_id' => $warehouse->id,
+                'notes' => 'Item inspected and approved for restock.',
+            ],
+        )->assertCreated()->assertJsonPath('data.disposition', 'restock');
+
+        $this->assertDatabaseHas('return_cases', [
+            'id' => $returnCaseId,
+            'status' => 'received',
+        ]);
+        $this->assertDatabaseHas('inventory_balances', [
+            'warehouse_id' => $warehouse->id,
+            'product_variant_id' => $variant->id,
+            'on_hand' => 9,
+            'reserved' => 0,
+        ]);
+        $this->assertDatabaseHas('inventory_movements', [
+            'warehouse_id' => $warehouse->id,
+            'product_variant_id' => $variant->id,
+            'movement_type' => 'return_restock',
+            'quantity_delta' => 1,
+        ]);
+
+        $this->postJson(
+            "/api/v1/organizations/{$organization->id}/returns/{$returnCaseId}/close",
+            ['notes' => 'Return completed.'],
+        )->assertOk()->assertJsonPath('data.status', 'closed');
+
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $organization->id,
+            'action' => 'return.closed',
+            'subject_id' => (string) $returnCaseId,
+        ]);
     }
 
     public function test_idempotency_key_does_not_create_duplicate_orders_or_reservations(): void
@@ -308,6 +367,8 @@ class PlatformHealthTest extends TestCase
             'shipments.manage',
             'finance.view',
             'finance.manage',
+            'returns.view',
+            'returns.manage',
         ])->map(fn (string $slug) => Permission::query()->create([
             'name' => str($slug)->replace('.', ' ')->headline()->toString(),
             'slug' => $slug,
