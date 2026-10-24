@@ -43,7 +43,7 @@ class InvoiceController extends Controller
             ->whereKey($order)
             ->firstOrFail();
 
-        $result = $invoices->issueForOrder($organization, $orderRecord);
+        $result = $invoices->issueForOrder($organization, $orderRecord, $request->user());
 
         return response()->json([
             'data' => $result['invoice'],
