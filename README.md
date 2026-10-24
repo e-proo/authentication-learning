@@ -1,90 +1,93 @@
 # Logistics & Commerce Platform
 
-A modular platform for logistics, multi-organization commerce, inventory, marketing, finance, and permissioned AI workflows.
+A modular logistics, multi-organization commerce, inventory, transport, fleet, branch-network, finance, marketing, and permissioned AI platform.
 
-> **Status:** the API foundation and first order-to-delivery slice are committed. Runtime verification is still required before production use. Payment-provider webhooks, double-entry ledger, refunds/settlement, public customer checkout, external carrier/mobile driver integrations, GPS route optimization, actual external ad-platform publishing/connectors, AI tools, and the Vue UI are not implemented yet. Initial return request/approval/receipt/restock workflow is now committed.
+> **Project status:** this repository contains a Laravel API foundation and initial order-to-delivery workflow. The frontend is not yet a complete product. Runtime verification is still required before production use. The driver mobile application, full branch/office/hub operations, WMS workflows, dispatch optimization, fleet maintenance, full TMS/linehaul, customer/merchant portals, complete cash reconciliation, external integrations, and AI execution workflows are not yet delivered end to end.
 
-## Architecture
+## Important product architecture decision
+
+This is **not** intended to be one generic admin dashboard that contains every logistics role as a small tab. The target is a portfolio of connected products with separate workspaces:
+
+- Dedicated Driver Companion mobile app
+- Branch, Office, Depot and Hub Operations
+- Warehouse Management System (WMS)
+- Dispatch and Route Planning / Last-Mile Control Tower
+- Fleet Management and Maintenance
+- Transport Management (TMS) and Linehaul
+- Shipment Visibility and Customer Tracking
+- Merchant/Shipper Portal and Customer Portal
+- Finance, Cash Desk, COD and Settlement
+- Customer Service and Claims
+- Organization / Platform Administration
+- Marketing, AI and Automation Operations
+- Executive Network Control Tower
+
+Apps share identity, domain APIs, canonical shipment/order events and authorization; they do not share one universal navigation or pretend that a database table equals a completed application.
+
+## Product research and specifications
+
+- [Product benchmark and capability catalogue](docs/PRODUCT_BENCHMARK.md) — researched representative logistics, driver, fleet, WMS, TMS, shipping API, visibility and forwarding products and expands their public capability categories into the candidate product scope.
+- [Applications and workspaces architecture](docs/APPLICATIONS_AND_WORKSPACES.md) — defines separate products, audiences, boundaries and cross-application invariants.
+- [Driver Companion application specification](docs/DRIVER_COMPANION_SPEC.md) — dedicated mobile app scope including offline workflow, scans, proof, COD, cash handover, vehicle checks, returns and release acceptance gates.
+- [Branch, Office, Depot and Hub specification](docs/BRANCH_OFFICE_HUB_SPEC.md) — counter booking, receiving, sortation, manifests, transfers, customer pickup, cash desk, investigation and reporting.
+- [Delivery roadmap](docs/ROADMAP.md) — implementation stages with clear status labels.
+
+The benchmark covers representative products, not literally every logistics application in the market. Feature research is a scope baseline; interviews with actual drivers, branch teams, dispatchers, warehouse operators, cashiers, finance, merchants and customers remain necessary. Specifications are **not** claims that these features already exist in code.
+
+## Current technical architecture
 
 - **Backend:** Laravel 13 / PHP 8.3+
 - **Database:** PostgreSQL 16+
-- **API:** REST API under `/api/v1`
+- **API:** REST under `/api/v1`
 - **Authentication:** Laravel Sanctum bearer tokens
-- **Architecture:** modular monolith with explicit domain boundaries
-- **Frontend:** Vue 3 + TypeScript planned as a separate implementation phase
+- **Backend pattern:** modular monolith with explicit domain boundaries
+- **Frontend:** dedicated application experiences are planned; the current `preview.html` is a design prototype only, not the finished Vue application and not connected to the API.
 
-## Implemented API areas
+## Backend foundations currently present
 
-- User registration, login, logout, current-user endpoint
-- Organization creation and organization-wide membership roles
-- Store and product management, product variants, publishing
-- Price lists with per-SKU prices and minimum quantities
-- Warehouse creation and auditable stock adjustments
-- Order creation from server-side price-list values, address/product/price snapshots, and stock reservation
-- Idempotent order creation through the `Idempotency-Key` header
-- Warehouse-split fulfillment, packing, shipment creation, shipment tracking events
-- Stock deduction and reservation consumption when a shipment is picked up by the carrier
-- Delivery completion and order status history
-- Fleet driver and vehicle records, transport trips, task assignment, trip/task event histories, and last-mile task-driven shipment status updates with proof references
-- Return requests, approval/rejection, received-item disposition, controlled restocking and return audit history
-- Internal marketing campaign workflow with separate creative/campaign approvals, internal-only publish action, and daily channel metrics tagged by source
-- Invoice snapshots and offline payment records with partial-payment reconciliation; COD confirmation is blocked until delivery
-- Initial PostgreSQL-backed feature tests and GitHub Actions CI
+- User registration/login/logout and current-user endpoint
+- Organizations and organization-wide membership roles
+- Store/product/variant publishing and price lists
+- Warehouses, inventory balances, movements, reservations and adjustments
+- Order creation with server-side prices, address/product/price snapshots and idempotency
+- Warehouse-split fulfillment, packing, shipment events, tracking and stock reconciliation at carrier pickup
+- Initial driver/vehicle records, transport trips and delivery tasks
+- Initial return request/approval/receipt/disposition/restock workflow
+- Invoice snapshots and offline payment records with partial-payment reconciliation
+- Internal marketing campaign approval workflow and manually/imported/estimated metrics
+- Preliminary AI action/run/tool-call/approval/event data models
 
-## Core principles
+The presence of a model, migration, controller, route or visual mock does **not** mean the corresponding operational product is complete. See the roadmap for verification and implementation gaps.
 
-1. A user, organization, branch, membership, role, permission, and commercial relationship are distinct concepts.
-2. Organization-wide API routes require an active organization-wide membership; branch-only access must be implemented through branch-scoped routes.
-3. Tenant access is enforced on the server. IDs supplied by clients are always resolved within the authorized organization's scope.
-4. A confirmed order preserves price, product name, SKU, currency, and delivery address snapshots.
-5. Available stock is `on_hand - reserved`; reservations do not reduce physical stock until carrier pickup.
-6. Shipment pickup reduces physical stock, releases the reservation, and appends a stock movement in one transaction.
-7. AI tools will use registered, permission-checked application actions; they will not get direct database access.
-8. Sensitive state transitions have explicit validation, business history records, and sanitized audit-log records written in the same transaction.
+## Engineering principles
+
+1. A user, tenant/organization, legal entity, branch, hub, warehouse, membership, role and operational actor are distinct concepts.
+2. Server-side authorization applies to all nested reads, actions, attachments, searches, reports and exports.
+3. Parcel/shipment custody events are auditable and not silently overwritten.
+4. COD collection, cash handover, bank deposit, settlement and recognized revenue are separate concepts.
+5. Inventory reservations are distinct from physical stock; movement/reconciliation happens in controlled transactions.
+6. Delivery completion validates assignment, lifecycle, required evidence and payment rules.
+7. AI uses registered, permission-checked application actions; it never gets arbitrary database access.
+8. Integrations use adapters, authenticated webhooks, idempotency, replay protection, bounded retries and observability.
+9. Driver and warehouse workflows must visibly handle poor connectivity, pending sync and conflict resolution.
+10. External carrier, payment, messaging, advertising, mapping or GPS support is not claimed until provider configuration and end-to-end verification succeed.
 
 ## Local development
 
-Requirements: PHP 8.3+, Composer 2, PostgreSQL 16+, and the PHP extensions required by Laravel/Sanctum.
+Requirements: PHP 8.3+, Composer 2, PostgreSQL 16+, and PHP extensions required by Laravel/Sanctum.
 
 1. Create a PostgreSQL database.
-2. Copy `.env.example` to `.env` and configure database credentials.
-3. Install dependencies: `composer install`
-4. Generate an application key: `php artisan key:generate`
-5. Run migrations: `php artisan migrate`
-6. Start the API: `php artisan serve`
-7. Run tests: `php artisan test`
+2. Copy `.env.example` to `.env` and configure credentials.
+3. Run `composer install`.
+4. Run `php artisan key:generate`.
+5. Run `php artisan migrate`.
+6. Start the API with `php artisan serve`.
+7. Run tests with `php artisan test`.
 
 Health check: `GET /api/v1/health`.
 
-## First end-to-end workflow
-
-1. Register and sign in to obtain a Sanctum token.
-2. Create an organization. The creator receives the initial organization-owner role.
-3. Create a store, product, and SKU variant; publish the product.
-4. Create a price list and add a price for the SKU.
-5. Create a warehouse and apply an `opening_balance` inventory adjustment.
-6. Create an order with the chosen store, price list, SKU, warehouse, quantity, and delivery address.
-7. Create fulfillments, pack each fulfillment, and create a shipment for each packed fulfillment.
-8. Record shipment events in order: `picked_up`, `in_transit`, then `delivered`.
-
-Use the bearer token in the `Authorization: Bearer <token>` header. See [Order-to-delivery API notes](docs/ORDER_TO_DELIVERY.md) and [Finance foundation notes](docs/FINANCE.md) for request examples and state rules.
-
-## Build plan
-
-- [x] Laravel application scaffold and API health endpoints
-- [x] Authentication, organizations, memberships, roles, and permissions foundation
-- [x] Catalog, variants, price lists, inventory balances, movements, and reservations
-- [x] Orders, warehouse-based fulfillments, shipments, delivery events, tenant-scope and idempotency tests
-- [x] Fleet records, trip assignment/lifecycle, delivery task assignment/events, last-mile integration, and return-pickup task linkage
-- [ ] Branch-scoped workspaces and organization relationship approvals
-- [x] Invoice snapshots and offline payment confirmation with partial-payment reconciliation
-- [ ] Double-entry ledger, verified payment-provider webhooks, refunds, payouts, and settlements
-- [x] Initial return request/approval/receipt/disposition and audited restock workflow
-- [ ] Return pickup integration, partial receipt policy refinements, refund automation, failed-delivery recovery
-- [ ] Campaigns, approved external ad channel connectors, tracking, and attribution
-- [ ] Permissioned AI tool registry, approvals, usage/cost controls, and evaluations
-- [ ] Vue application, Arabic RTL/English LTR, end-to-end browser tests, observability, deployment
+Runtime verification is still required; do not treat this guide as proof that the current revision passes setup/tests on every environment.
 
 ## Security
 
-Never commit `.env`, access tokens, passwords, private keys, or production data. Review [Security Baseline](docs/SECURITY.md). This repository is not yet production-ready; review migrations, policies, rate limits, operational monitoring, backups, and tests before a production deployment.
+Never commit secrets, tokens, passwords, private keys or production data. Review [Security Baseline](docs/SECURITY.md). The repository is not production-ready until migrations, tenant/branch policies, operational tests, CI, backups/restore, retention, monitoring, integrations and security review have been verified.
