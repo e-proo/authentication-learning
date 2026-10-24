@@ -6,7 +6,8 @@ use App\Models\InventoryBalance;
 use App\Models\InventoryMovement;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use Symfony\\Component\\HttpKernel\\Exception\\ConflictHttpException;\nuse Illuminate\\Validation\\ValidationException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Illuminate\Validation\ValidationException;
 
 class InventoryService
 {
