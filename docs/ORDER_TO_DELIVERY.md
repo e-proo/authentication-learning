@@ -161,11 +161,41 @@ POST /api/v1/organizations/{organization}/payments/{payment}/confirm
 
 Bank transfer confirmation requires a reference. Cash-on-delivery confirmation is allowed only after the order has been marked delivered. Online payment is kept pending and cannot be manually confirmed until a signed and verified provider-webhook integration is implemented.
 
+
+
+## 7. Request and receive a return
+
+A return can be requested only after the order is marked delivered. The service checks the delivered shipment-item quantity and accounts for other open and completed returns so the total requested/received quantity cannot exceed what was delivered.
+
+Request a return:
+
+POST /api/v1/organizations/{organization}/orders/{order}/returns
+
+    {
+      "reason": "damaged",
+      "notes": "Packaging was damaged on arrival",
+      "items": [
+        {
+          "order_item_id": 1,
+          "quantity": 1,
+          "reason": "Damaged packaging"
+        }
+      ]
+    }
+
+Approve or reject the request using the return case ID. Only approved cases may be received. Each return line records one receipt with a disposition:
+
+- restock: requires inventory.adjust permission and an active warehouse in the same organization. This increases the on-hand balance and appends a return_restock inventory movement in the transaction.
+- damaged: records receipt without making the units sellable.
+- discard: records disposal without adding sellable stock.
+
+When every return line has a receipt, the return moves to received. Close it with the close endpoint. The current version creates at most one receipt per return line and does not automate refunds or reverse-pickup transport.
+
 ## Current limitations
 
 - Public customer checkout, cart sessions, guest customers, tax/shipping rate calculators, and payment provider webhooks are not included yet.
 - Shipping/tax totals are currently zero; configure provider-verified rates before using these endpoints commercially.
 - One order item is allocated to one warehouse; partial item allocation and multiple packages per fulfillment are future work.
 - Sanitized audit records are created for order, stock, fulfillment, shipment, invoice, and payment actions.
-- Returns, failed-delivery reattempt policies, proof-of-delivery media, refunds, and settlement accounting are not implemented.
+- Automated refunds, failed-delivery reattempt policies, proof-of-delivery media, and settlement accounting are not implemented.
 - Test the workflow against PostgreSQL with php artisan test before deployment. Do not use production money or inventory until database migrations and integration tests pass.
