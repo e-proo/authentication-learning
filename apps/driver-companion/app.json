@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Wasl Driver Companion",
+    "slug": "wasl-driver-companion",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "supportsRTL": true,
+    "android": {
+      "package": "tech.scode.wasl.driver",
+      "adaptiveIcon": {
+        "backgroundColor": "#10223C"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "tech.scode.wasl.driver",
+      "supportsTablet": false
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
