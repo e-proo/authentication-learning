@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -34,7 +35,7 @@ return new class extends Migration
             $table->unsignedInteger('minimum_quantity')->default(1);
             $table->timestamps();
             $table->unique(['price_list_id', 'product_variant_id']);
-            $table->check('minimum_quantity > 0');
+
         });
 
         Schema::create('orders', function (Blueprint $table): void {
@@ -69,7 +70,7 @@ return new class extends Migration
             $table->unique(['organization_id', 'id']);
             $table->unique(['organization_id', 'idempotency_key']);
             $table->index(['organization_id', 'status', 'created_at']);
-            $table->check('total_minor = subtotal_minor - discount_minor + shipping_minor + tax_minor');
+
         });
 
         Schema::create('order_items', function (Blueprint $table): void {
@@ -93,8 +94,8 @@ return new class extends Migration
             $table->foreign(['organization_id', 'warehouse_id'])
                 ->references(['organization_id', 'id'])->on('warehouses')->restrictOnDelete();
             $table->unique(['organization_id', 'id']);
-            $table->check('quantity > 0');
-            $table->check('line_total_minor = unit_price_minor * quantity - discount_minor + tax_minor');
+
+
         });
 
         Schema::create('stock_reservations', function (Blueprint $table): void {
@@ -114,7 +115,7 @@ return new class extends Migration
             $table->foreign(['organization_id', 'warehouse_id'])
                 ->references(['organization_id', 'id'])->on('warehouses')->restrictOnDelete();
             $table->unique('order_item_id');
-            $table->check('quantity > 0');
+
         });
 
         Schema::create('order_status_histories', function (Blueprint $table): void {
@@ -162,7 +163,7 @@ return new class extends Migration
                 ->references(['organization_id', 'id'])->on('fulfillments')->cascadeOnDelete();
             $table->foreign(['organization_id', 'order_item_id'])
                 ->references(['organization_id', 'id'])->on('order_items')->restrictOnDelete();
-            $table->check('quantity > 0');
+
         });
 
         Schema::create('shipments', function (Blueprint $table): void {
@@ -200,7 +201,7 @@ return new class extends Migration
             $table->foreign(['organization_id', 'order_item_id'])
                 ->references(['organization_id', 'id'])->on('order_items')->restrictOnDelete();
             $table->unique(['shipment_id', 'order_item_id']);
-            $table->check('quantity > 0');
+
         });
 
         Schema::create('shipment_events', function (Blueprint $table): void {
@@ -218,6 +219,16 @@ return new class extends Migration
             $table->index(['shipment_id', 'occurred_at']);
         });
     }
+
+
+        // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
+        DB::statement('ALTER TABLE price_list_items ADD CONSTRAINT price_list_items_minimum_quantity_positive CHECK (minimum_quantity > 0)');
+        DB::statement('ALTER TABLE orders ADD CONSTRAINT orders_total_reconciles CHECK (total_minor = subtotal_minor - discount_minor + shipping_minor + tax_minor)');
+        DB::statement('ALTER TABLE order_items ADD CONSTRAINT order_items_quantity_positive CHECK (quantity > 0)');
+        DB::statement('ALTER TABLE order_items ADD CONSTRAINT order_items_line_total_reconciles CHECK (line_total_minor = unit_price_minor * quantity - discount_minor + tax_minor)');
+        DB::statement('ALTER TABLE stock_reservations ADD CONSTRAINT stock_reservations_quantity_positive CHECK (quantity > 0)');
+        DB::statement('ALTER TABLE fulfillment_items ADD CONSTRAINT fulfillment_items_quantity_positive CHECK (quantity > 0)');
+        DB::statement('ALTER TABLE shipment_items ADD CONSTRAINT shipment_items_quantity_positive CHECK (quantity > 0)');
 
     public function down(): void
     {
