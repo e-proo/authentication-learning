@@ -170,6 +170,77 @@ class PlatformHealthTest extends TestCase
         ]);
     }
 
+    public function test_invoice_and_partial_offline_payments_reconcile_order_totals(): void
+    {
+        [$user, $organization, $store, $priceList, $variant, $warehouse] = $this->createCommerceFixture();
+
+        $payload = [
+            'store_id' => $store->id,
+            'price_list_id' => $priceList->id,
+            'items' => [[
+                'product_variant_id' => $variant->id,
+                'warehouse_id' => $warehouse->id,
+                'quantity' => 2,
+            ]],
+            'shipping_address' => [
+                'name' => 'Finance Test',
+                'phone' => '+967700000001',
+                'country_code' => 'YE',
+                'city' => 'Sanaa',
+                'address_line1' => 'Finance test street',
+            ],
+        ];
+
+        $orderResponse = $this->actingAs($user, 'sanctum')
+            ->postJson("/api/v1/organizations/{$organization->id}/orders", $payload)
+            ->assertCreated();
+        $orderId = $orderResponse->json('data.id');
+
+        $invoiceResponse = $this->postJson(
+            "/api/v1/organizations/{$organization->id}/orders/{$orderId}/invoice"
+        )->assertCreated()->assertJsonPath('data.status', 'issued');
+        $invoiceId = $invoiceResponse->json('data.id');
+
+        $firstPayment = $this->withHeader('Idempotency-Key', 'finance-payment-key-001')
+            ->postJson("/api/v1/organizations/{$organization->id}/payments", [
+                'invoice_id' => $invoiceId,
+                'payment_method' => 'cash',
+                'amount_minor' => 1000,
+            ])->assertCreated()->assertJsonPath('data.status', 'pending');
+        $firstPaymentId = $firstPayment->json('data.id');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/payments/{$firstPaymentId}/confirm", [
+            'notes' => 'First cash installment received.',
+        ])->assertOk()->assertJsonPath('data.status', 'paid');
+
+        $this->assertDatabaseHas('invoices', [
+            'id' => $invoiceId,
+            'status' => 'partially_paid',
+            'paid_total_minor' => 1000,
+        ]);
+        $this->assertDatabaseHas('orders', ['id' => $orderId, 'payment_status' => 'partial']);
+
+        $secondPayment = $this->withHeader('Idempotency-Key', 'finance-payment-key-002')
+            ->postJson("/api/v1/organizations/{$organization->id}/payments", [
+                'invoice_id' => $invoiceId,
+                'payment_method' => 'bank_transfer',
+                'amount_minor' => 1500,
+            ])->assertCreated();
+        $secondPaymentId = $secondPayment->json('data.id');
+
+        $this->postJson("/api/v1/organizations/{$organization->id}/payments/{$secondPaymentId}/confirm", [
+            'reference' => 'BANK-REF-2026-0001',
+            'notes' => 'Bank transfer verified against statement.',
+        ])->assertOk()->assertJsonPath('data.status', 'paid');
+
+        $this->assertDatabaseHas('invoices', [
+            'id' => $invoiceId,
+            'status' => 'paid',
+            'paid_total_minor' => 2500,
+        ]);
+        $this->assertDatabaseHas('orders', ['id' => $orderId, 'payment_status' => 'paid']);
+    }
+
     public function test_membership_in_another_organization_does_not_grant_access(): void
     {
         [$user] = $this->createCommerceFixture();
@@ -219,6 +290,8 @@ class PlatformHealthTest extends TestCase
             'orders.view',
             'orders.manage',
             'shipments.manage',
+            'finance.view',
+            'finance.manage',
         ])->map(fn (string $slug) => Permission::query()->create([
             'name' => str($slug)->replace('.', ' ')->headline()->toString(),
             'slug' => $slug,
