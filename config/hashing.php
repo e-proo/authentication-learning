@@ -5,7 +5,6 @@ return [
     'bcrypt' => [
         'rounds' => env('BCRYPT_ROUNDS', 12),
         'verify' => env('HASH_VERIFY', true),
-        ' limit' => null,
     ],
     'argon' => [
         'memory' => env('ARGON_MEMORY', 65536),
