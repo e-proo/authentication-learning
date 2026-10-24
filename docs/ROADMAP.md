@@ -19,7 +19,8 @@
 - [x] Shipment lifecycle events and stock reconciliation at carrier pickup
 - [x] Delivery completion and order status history
 - [x] Initial return request, approval/rejection, receipt disposition, controlled stock restock, and audit trail
-- [ ] Partial fulfillment quantities, multiple packages per fulfillment, proof-of-delivery media, return pickup integration, and failed-delivery recovery
+- [x] Fleet driver/vehicle records, trips, task assignment and task event history, plus task-driven last-mile shipment progression
+- [ ] Partial fulfillment quantities, multiple packages per fulfillment, managed proof-of-delivery media upload/verification, driver mobile/GPS integration, return pickup execution integration, and failed-delivery recovery
 
 ## Phase 4 — Finance
 - [x] Invoice and invoice-item snapshots per order
