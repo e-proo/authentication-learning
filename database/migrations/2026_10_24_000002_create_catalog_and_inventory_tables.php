@@ -41,13 +41,14 @@ return new class extends Migration
         Schema::create('product_variants', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->string('sku')->unique();
+            $table->string('sku');
             $table->string('name')->nullable();
             $table->jsonb('attributes')->nullable();
             $table->string('barcode')->nullable()->index();
             $table->unsignedInteger('weight_grams')->nullable();
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
+            $table->unique(['product_id', 'sku']);
         });
 
         Schema::create('warehouses', function (Blueprint $table): void {
