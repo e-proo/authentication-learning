@@ -15,7 +15,7 @@ class ProductController extends Controller
 {
     public function index(Request $request, Organization $organization): JsonResponse
     {
-        $this->ensureMembership($request, $organization);
+        $this->ensureMembership($request, $organization, 'catalog.products.view');
 
         $products = Product::query()
             ->where('organization_id', $organization->id)
@@ -28,7 +28,7 @@ class ProductController extends Controller
 
     public function store(Request $request, Organization $organization): JsonResponse
     {
-        $this->ensureMembership($request, $organization);
+        $this->ensureMembership($request, $organization, 'catalog.products.create');
 
         $validated = $request->validate([
             'store_id' => [
@@ -58,16 +58,25 @@ class ProductController extends Controller
         return response()->json(['data' => $product], 201);
     }
 
-    private function ensureMembership(Request $request, Organization $organization): void
+    private function ensureMembership(Request $request, Organization $organization, string $permission): void
     {
-        $membershipExists = $request->user()
+        $membership = $request->user()
             ->memberships()
             ->where('organization_id', $organization->id)
             ->where('status', 'active')
-            ->exists();
+            ->with('roles.permissions')
+            ->first();
 
-        if (! $membershipExists || ! $organization->is_active) {
+        if (! $membership || ! $organization->is_active) {
             throw new AuthorizationException('You are not allowed to access this organization.');
+        }
+
+        $allowed = $membership->roles
+            ->flatMap(fn ($role) => $role->permissions)
+            ->contains('slug', $permission);
+
+        if (! $allowed) {
+            throw new AuthorizationException('You do not have the required permission.');
         }
     }
 }
