@@ -56,11 +56,12 @@ class InventoryController extends Controller
         }
 
         $movement = $inventory->adjust(
+            $organization,
             (int) $warehouse->id,
             (int) $variant->id,
             $delta,
             $type,
-            (int) $request->user()->id,
+            $request->user(),
             $key,
             $validated['metadata'] ?? [],
         );
