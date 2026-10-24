@@ -7,6 +7,7 @@ use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,7 @@ class OrganizationController extends Controller
         return response()->json(['data' => $organizations]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, AuditLogger $audit): JsonResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:180'],
@@ -47,7 +48,7 @@ class OrganizationController extends Controller
             'commerce_mode' => ['sometimes', Rule::in(['catalog', 'marketplace', 'hybrid'])],
         ]);
 
-        $organization = DB::transaction(function () use ($request, $validated): Organization {
+        $organization = DB::transaction(function () use ($request, $validated, $audit): Organization {
             $organization = Organization::create([
                 'name' => $validated['name'],
                 'slug' => $validated['slug'],
@@ -95,6 +96,12 @@ class OrganizationController extends Controller
 
             $ownerRole->permissions()->syncWithoutDetaching($permissions->pluck('id')->all());
             $membership->roles()->syncWithoutDetaching([$ownerRole->id]);
+
+            $audit->record($request->user(), $organization, 'organization.created', $organization, [
+                'kind' => $organization->kind,
+                'commerce_mode' => $organization->commerce_mode,
+                'initial_role' => $ownerRole->slug,
+            ]);
 
             return $organization;
         });
