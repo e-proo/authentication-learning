@@ -12,6 +12,8 @@
 - Require explicit approval for configured sensitive actions such as refunds, price changes, publishing campaigns, or payouts.
 - Apply rate limits to authentication, all authenticated API endpoints, public quote forms, webhooks, and AI endpoints.
 - Configure CORS to allow only explicitly listed frontend origins; bearer-token APIs should not require cross-origin cookies by default.
+- Driver/task proof references are not equivalent to verified photo/signature evidence until backed by an upload service and integrity/retention controls.
+- Resource assignment needs conflict checks and transaction row locks; add branch-level policies and load/concurrency tests before scaling operational use.
 - Restrict user-supplied metadata to documented keys and never store credentials or payment secrets in metadata.
 - Use HTTPS in deployed environments and disable debug output in production.
 - Back up PostgreSQL and test restoration regularly.
