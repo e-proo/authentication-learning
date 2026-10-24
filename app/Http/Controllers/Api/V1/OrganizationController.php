@@ -83,7 +83,9 @@ class OrganizationController extends Controller
                 'delivery_tasks.manage' => 'Manage delivery tasks and proof of delivery',
                 'finance.view' => 'View financial records',
                 'finance.manage' => 'Issue invoices and reconcile offline payments',
-                'marketing.manage' => 'Manage marketing campaigns',
+                'marketing.view' => 'View campaigns and campaign metrics',
+                'marketing.manage' => 'Manage campaigns and creatives',
+                'marketing.approve' => 'Approve campaign and creative publishing',
                 'ai.use' => 'Use approved AI assistant tools',
             ];
 
