@@ -92,7 +92,7 @@ class OrganizationController extends Controller
                 ['name' => 'Organization Owner', 'description' => 'Full access within an organization', 'is_system' => true],
             );
 
-            $ownerRole->permissions()->syncWithoutDetaching($permissions->modelKeys());
+            $ownerRole->permissions()->syncWithoutDetaching($permissions->pluck('id')->all());
             $membership->roles()->syncWithoutDetaching([$ownerRole->id]);
 
             return $organization;
