@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\FulfillmentController;
 use App\Http\Controllers\Api\V1\InventoryController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\ReturnController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\PriceListController;
@@ -75,5 +76,13 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/organizations/{organization}/payments', [PaymentController::class, 'index']);
         Route::post('/organizations/{organization}/payments', [PaymentController::class, 'store']);
         Route::post('/organizations/{organization}/payments/{payment}/confirm', [PaymentController::class, 'confirm']);
+
+        Route::get('/organizations/{organization}/returns', [ReturnController::class, 'index']);
+        Route::post('/organizations/{organization}/orders/{order}/returns', [ReturnController::class, 'requestForOrder']);
+        Route::get('/organizations/{organization}/returns/{returnCase}', [ReturnController::class, 'show']);
+        Route::post('/organizations/{organization}/returns/{returnCase}/approve', [ReturnController::class, 'approve']);
+        Route::post('/organizations/{organization}/returns/{returnCase}/reject', [ReturnController::class, 'reject']);
+        Route::post('/organizations/{organization}/returns/{returnCase}/items/{returnItem}/receive', [ReturnController::class, 'receiveItem']);
+        Route::post('/organizations/{organization}/returns/{returnCase}/close', [ReturnController::class, 'close']);
     });
 });
