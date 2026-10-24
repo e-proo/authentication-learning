@@ -87,10 +87,11 @@ return new class extends Migration
             $table->integer('quantity_delta');
             $table->string('reference_type')->nullable();
             $table->string('reference_id')->nullable();
-            $table->string('idempotency_key')->nullable()->unique();
+            $table->string('idempotency_key')->nullable();
             $table->jsonb('metadata')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('created_at')->useCurrent()->index();
+            $table->unique(['warehouse_id', 'idempotency_key']);
             $table->index(['reference_type', 'reference_id']);
         });
     }
