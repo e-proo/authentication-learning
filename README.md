@@ -2,7 +2,7 @@
 
 A modular platform for logistics, multi-organization commerce, inventory, marketing, finance, and permissioned AI workflows.
 
-> **Status:** the API foundation and first order-to-delivery slice are committed. Runtime verification is still required before production use. Payment-provider webhooks, ledger accounting, refunds/settlement, public customer checkout, returns, marketing integrations, AI tools, and the Vue UI are not implemented yet.
+> **Status:** the API foundation and first order-to-delivery slice are committed. Runtime verification is still required before production use. Payment-provider webhooks, double-entry ledger, refunds/settlement, public customer checkout, returns, marketing integrations, AI tools, and the Vue UI are not implemented yet.
 
 ## Architecture
 
@@ -25,7 +25,7 @@ A modular platform for logistics, multi-organization commerce, inventory, market
 - Warehouse-split fulfillment, packing, shipment creation, shipment tracking events
 - Stock deduction and reservation consumption when a shipment is picked up by the carrier
 - Delivery completion and order status history
-- Invoice snapshots, partial payment records, offline payment confirmation, and invoice/order payment-status reconciliation
+- Invoice snapshots and offline payment records with partial-payment reconciliation; COD confirmation is blocked until delivery
 - Initial PostgreSQL-backed feature tests and GitHub Actions CI
 
 ## Core principles
@@ -73,8 +73,8 @@ Use the bearer token in the `Authorization: Bearer <token>` header. See [Order-t
 - [x] Catalog, variants, price lists, inventory balances, movements, and reservations
 - [x] Orders, warehouse-based fulfillments, shipments, delivery events, tenant-scope and idempotency tests
 - [ ] Branch-scoped workspaces and organization relationship approvals
-- [x] Invoice snapshots and offline payment records with partial-payment reconciliation
-- [ ] Double-entry ledger, payment-provider webhooks, refunds, settlements, and reconciliation
+- [x] Invoice snapshots and offline payment confirmation with partial-payment reconciliation
+- [ ] Double-entry ledger, verified payment-provider webhooks, refunds, payouts, and settlements
 - [ ] Returns, failed-delivery recovery, and reverse logistics
 - [ ] Campaigns, approved external ad channel connectors, tracking, and attribution
 - [ ] Permissioned AI tool registry, approvals, usage/cost controls, and evaluations
