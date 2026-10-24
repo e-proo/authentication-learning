@@ -45,6 +45,7 @@ class InventoryService
         ): InventoryMovement {
             if ($idempotencyKey !== null) {
                 $existing = InventoryMovement::query()
+                    ->where('warehouse_id', $warehouseId)
                     ->where('idempotency_key', $idempotencyKey)
                     ->first();
 
@@ -76,6 +77,7 @@ class InventoryService
             // Re-check after waiting for the row lock so concurrent retries return the original movement.
             if ($idempotencyKey !== null) {
                 $concurrentRetry = InventoryMovement::query()
+                    ->where('warehouse_id', $warehouseId)
                     ->where('idempotency_key', $idempotencyKey)
                     ->first();
 
