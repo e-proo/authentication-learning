@@ -71,4 +71,9 @@ class Organization extends Model
     {
         return $this->hasMany(DeliveryTask::class);
     }
+
+    public function campaigns(): HasMany
+    {
+        return $this->hasMany(Campaign::class);
+    }
 }
