@@ -3,6 +3,7 @@
 namespace App\Services\Logistics;
 
 use App\Models\Fulfillment;
+use App\Services\Audit\AuditLogger;
 use App\Models\InventoryBalance;
 use App\Models\InventoryMovement;
 use App\Models\Order;
@@ -20,6 +21,10 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class ShipmentService
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     public function createForFulfillment(
         Organization $organization,
         Fulfillment $fulfillment,
@@ -90,6 +95,12 @@ class ShipmentService
                 'occurred_at' => now(),
             ]);
 
+            $this->audit->record($actor, $organization, 'shipment.created', $shipment, [
+                'shipment_number' => $shipment->shipment_number,
+                'fulfillment_id' => $lockedFulfillment->id,
+                'carrier_type' => $shipment->carrier_type,
+            ]);
+
             return $shipment->load(['items.orderItem', 'events']);
         }, attempts: 3);
     }
@@ -150,6 +161,8 @@ class ShipmentService
                 );
             }
 
+            $previousStatus = $locked->status;
+
             if ($nextStatus === 'picked_up') {
                 $this->dispatchStock($organization, $locked, $actor);
                 $locked->shipped_at = now();
@@ -177,6 +190,12 @@ class ShipmentService
                 'actor_user_id' => $actor->id,
                 'metadata' => $metadata ?: null,
                 'occurred_at' => now(),
+            ]);
+
+            $this->audit->record($actor, $organization, 'shipment.status_changed', $locked, [
+                'previous_status' => $previousStatus,
+                'status' => $nextStatus,
+                'location' => $location,
             ]);
 
             if ($nextStatus === 'delivered') {
