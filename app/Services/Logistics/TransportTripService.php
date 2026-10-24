@@ -86,7 +86,7 @@ class TransportTripService
             $busyDriver = TransportTrip::query()
                 ->where('organization_id', $organization->id)
                 ->where('driver_id', $driver->id)
-                ->whereKeyNot($locked->id)
+                ->where('id', '!=', $locked->id)
                 ->whereIn('status', ['assigned', 'departed'])
                 ->exists();
 
@@ -113,7 +113,7 @@ class TransportTripService
                 $busyVehicle = TransportTrip::query()
                     ->where('organization_id', $organization->id)
                     ->where('vehicle_id', $vehicle->id)
-                    ->whereKeyNot($locked->id)
+                    ->where('id', '!=', $locked->id)
                     ->whereIn('status', ['assigned', 'departed'])
                     ->exists();
 
