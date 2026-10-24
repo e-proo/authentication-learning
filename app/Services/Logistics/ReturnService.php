@@ -257,9 +257,9 @@ class ReturnService
             }
 
             $quantity = (int) $data['quantity_received'];
-            if ($quantity > $lockedItem->requested_quantity) {
+            if ($quantity !== $lockedItem->requested_quantity) {
                 throw ValidationException::withMessages([
-                    'quantity_received' => ['Received quantity cannot exceed the requested return quantity.'],
+                    'quantity_received' => ['This version requires the complete requested quantity for each return line. Create a separate return case for a partial return.'],
                 ]);
             }
 
