@@ -3,10 +3,12 @@
 namespace App\Services\Logistics;
 
 use App\Models\Fulfillment;
+use App\Services\Audit\AuditLogger;
 use App\Models\FulfillmentItem;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use App\Models\Organization;
+use App\Models\User;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -14,6 +16,10 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class FulfillmentService
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     /**
      * Create one fulfillment for each warehouse used by the confirmed order.
      *
@@ -66,6 +72,12 @@ class FulfillmentService
                     ]);
                 }
 
+                $this->audit->record($actor, $organization, 'fulfillment.created', $fulfillment, [
+                    'order_id' => $lockedOrder->id,
+                    'warehouse_id' => (int) $warehouseId,
+                    'item_count' => $items->count(),
+                ]);
+
                 $created[] = $fulfillment;
             }
 
@@ -90,9 +102,9 @@ class FulfillmentService
         }, attempts: 3);
     }
 
-    public function pack(Organization $organization, Fulfillment $fulfillment): Fulfillment
+    public function pack(Organization $organization, Fulfillment $fulfillment, User $actor): Fulfillment
     {
-        return DB::transaction(function () use ($organization, $fulfillment): Fulfillment {
+        return DB::transaction(function () use ($organization, $fulfillment, $actor): Fulfillment {
             $locked = Fulfillment::query()
                 ->where('organization_id', $organization->id)
                 ->whereKey($fulfillment->id)
@@ -110,6 +122,11 @@ class FulfillmentService
             $locked->status = 'packed';
             $locked->packed_at = now();
             $locked->save();
+
+            $this->audit->record($actor, $organization, 'fulfillment.packed', $locked, [
+                'order_id' => $locked->order_id,
+                'warehouse_id' => $locked->warehouse_id,
+            ]);
 
             return $locked->load(['items.orderItem', 'warehouse']);
         }, attempts: 3);
