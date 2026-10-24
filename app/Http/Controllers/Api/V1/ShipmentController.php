@@ -62,7 +62,11 @@ class ShipmentController extends Controller
             ],
             'notes' => ['nullable', 'string', 'max:2000'],
             'location' => ['nullable', 'string', 'max:255'],
-            'metadata' => ['nullable', 'array'],
+            'metadata' => ['nullable', 'array:event_code,attempt,provider,provider_event_id'],
+            'metadata.event_code' => ['nullable', 'string', 'max:80'],
+            'metadata.attempt' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'metadata.provider' => ['nullable', 'string', 'max:80'],
+            'metadata.provider_event_id' => ['nullable', 'string', 'max:180'],
         ]);
 
         $record = Shipment::query()
