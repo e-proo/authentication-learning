@@ -27,4 +27,19 @@ class Branch extends Model
     {
         return $this->hasMany(Membership::class);
     }
+
+    public function drivers(): HasMany
+    {
+        return $this->hasMany(FleetDriver::class);
+    }
+
+    public function vehicles(): HasMany
+    {
+        return $this->hasMany(FleetVehicle::class);
+    }
+
+    public function transportTrips(): HasMany
+    {
+        return $this->hasMany(TransportTrip::class);
+    }
 }
