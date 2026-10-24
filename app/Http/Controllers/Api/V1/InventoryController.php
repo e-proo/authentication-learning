@@ -39,6 +39,17 @@ class InventoryController extends Controller
             return response()->json(['message' => 'The SKU does not belong to this organization.'], 422);
         }
 
+        $delta = (int) $validated['quantity_delta'];
+        $type = $validated['movement_type'];
+
+        if (in_array($type, ['opening_balance', 'restock'], true) && $delta < 0) {
+            return response()->json(['message' => 'Opening balance and restock adjustments must be positive.'], 422);
+        }
+
+        if (in_array($type, ['damage', 'write_off'], true) && $delta > 0) {
+            return response()->json(['message' => 'Damage and write-off adjustments must be negative.'], 422);
+        }
+
         $key = $request->header('Idempotency-Key');
         if ($key !== null && (strlen($key) < 8 || strlen($key) > 128)) {
             return response()->json(['message' => 'Idempotency-Key must contain 8–128 characters.'], 422);
@@ -47,8 +58,8 @@ class InventoryController extends Controller
         $movement = $inventory->adjust(
             (int) $warehouse->id,
             (int) $variant->id,
-            (int) $validated['quantity_delta'],
-            $validated['movement_type'],
+            $delta,
+            $type,
             (int) $request->user()->id,
             $key,
             $validated['metadata'] ?? [],
