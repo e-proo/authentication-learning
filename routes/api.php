@@ -37,6 +37,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/organizations', [OrganizationController::class, 'index']);
+        Route::post('/organizations', [OrganizationController::class, 'store']);
         Route::get('/organizations/{organization}/products', [ProductController::class, 'index']);
         Route::post('/organizations/{organization}/products', [ProductController::class, 'store']);
     });
