@@ -21,9 +21,11 @@
 - [ ] Partial fulfillment quantities, multiple packages per fulfillment, proof-of-delivery media, returns, and failed-delivery recovery
 
 ## Phase 4 — Finance
-- [ ] Invoices and invoice items
-- [ ] Payment methods, provider webhooks, refunds, and settlement
-- [ ] Reconciliation, immutable double-entry ledger integration, and payout approvals
+- [x] Invoice and invoice-item snapshots per order
+- [x] Idempotent pending payment records and offline confirmation for cash/bank transfer/COD rules
+- [x] Partial-payment allocation and invoice/order payment-status updates
+- [ ] Verified provider webhooks, replay protection, payment failure/reversal, refunds, and settlement
+- [ ] Immutable double-entry ledger, reconciliation imports, merchant/courier payouts, and approval separation of duties
 
 ## Phase 5 — Marketing
 - [ ] Campaign planning, budgets, creatives, and approval workflow
