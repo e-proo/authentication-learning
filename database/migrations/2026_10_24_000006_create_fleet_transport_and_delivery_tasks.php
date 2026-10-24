@@ -78,6 +78,22 @@ return new class extends Migration
             $table->index(['organization_id', 'status', 'planned_departure_at']);
         });
 
+        Schema::create('transport_trip_events', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('organization_id');
+            $table->foreignId('transport_trip_id');
+            $table->string('event_type')->index();
+            $table->string('previous_status')->nullable();
+            $table->string('status')->index();
+            $table->foreignId('actor_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->text('notes')->nullable();
+            $table->jsonb('metadata')->nullable();
+            $table->timestamp('occurred_at')->useCurrent()->index();
+            $table->foreign(['organization_id', 'transport_trip_id'])
+                ->references(['organization_id', 'id'])->on('transport_trips')->cascadeOnDelete();
+            $table->index(['transport_trip_id', 'occurred_at']);
+        });
+
         Schema::create('delivery_tasks', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->constrained()->restrictOnDelete();
@@ -146,6 +162,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('delivery_task_events');
+        Schema::dropIfExists('transport_trip_events');
         Schema::dropIfExists('delivery_tasks');
         Schema::dropIfExists('transport_trips');
         Schema::dropIfExists('fleet_vehicles');
