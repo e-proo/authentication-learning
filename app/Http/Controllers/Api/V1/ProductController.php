@@ -56,7 +56,7 @@ class ProductController extends Controller
             ->firstOrFail();
 
         $validated = $request->validate([
-            'sku' => ['required', 'string', 'max:100', 'unique:product_variants,sku'],
+            'sku' => ['required', 'string', 'max:100', Rule::unique('product_variants', 'sku')->where('product_id', $productRecord->id)],
             'name' => ['nullable', 'string', 'max:180'],
             'attributes' => ['nullable', 'array'],
             'barcode' => ['nullable', 'string', 'max:120'],
