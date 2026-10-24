@@ -197,7 +197,7 @@ export default function App() {
       ['التواصل والدعم','تعليمات المهمة والرسائل والمساعدة','✉','messages' as Screen],
       ['العمل دون اتصال والمزامنة','الأحداث المحلية والملفات والتعارضات','⟳','sync' as Screen],
       ['الأداء والتسويات','المهام والمحاولات والتحصيل ومحاضر التسليم','◷','performance' as Screen],
-    ].map(item=><Pressable key={item[0]} style={S.linkRow} onPress={() => go(item[3])}><Text style={S.linkIcon}>{item[2]}</Text><View style={{flex:1,gap:4}}><Text style={S.taskTitle}>{item[0]}</Text><Text style={S.taskMeta}>{item[1]}</Text></View><Text style={S.chevron}>‹</Text></Pressable>)}</Card>
+    ].map(item=><Pressable key={item[0]} style={S.linkRow} onPress={() => { if(item[3]==='pickup') setSelectedTask('PU-014'); if(item[3]==='transfer') setSelectedTask('TR-018'); if(item[3]==='returns') setSelectedTask('RT-041'); go(item[3]); }}><Text style={S.linkIcon}>{item[2]}</Text><View style={{flex:1,gap:4}}><Text style={S.taskTitle}>{item[0]}</Text><Text style={S.taskMeta}>{item[1]}</Text></View><Text style={S.chevron}>‹</Text></Pressable>)}</Card>
     <Card><Heading title="الخصوصية والأمان" />{['الوصول إلى بيانات المهام المسندة فقط.','تتبع موقع معلن ومحدود بالوردية/المهمة وفق السياسة.','إثباتات التسليم خاصة ولا تُنشر بروابط عامة.'].map(t=><Text key={t} style={S.bullet}>•  {t}</Text>)}</Card>
   </>;
 
