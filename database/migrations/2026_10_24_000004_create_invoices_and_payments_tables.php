@@ -100,8 +100,6 @@ return new class extends Migration
                 ->references(['organization_id', 'id'])->on('payments')->cascadeOnDelete();
             $table->index(['payment_id', 'created_at']);
         });
-    }
-
 
         // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
         DB::statement('ALTER TABLE invoices ADD CONSTRAINT invoices_total_reconciles CHECK (total_minor = subtotal_minor - discount_minor + shipping_minor + tax_minor)');
@@ -109,6 +107,7 @@ return new class extends Migration
         DB::statement('ALTER TABLE invoice_items ADD CONSTRAINT invoice_items_quantity_positive CHECK (quantity > 0)');
         DB::statement('ALTER TABLE invoice_items ADD CONSTRAINT invoice_items_line_total_reconciles CHECK (line_total_minor = unit_price_minor * quantity - discount_minor + tax_minor)');
         DB::statement('ALTER TABLE payments ADD CONSTRAINT payments_amount_positive CHECK (amount_minor > 0)');
+    }
 
     public function down(): void
     {
