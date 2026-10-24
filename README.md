@@ -37,7 +37,7 @@ A modular platform for logistics, multi-organization commerce, inventory, market
 5. Available stock is `on_hand - reserved`; reservations do not reduce physical stock until carrier pickup.
 6. Shipment pickup reduces physical stock, releases the reservation, and appends a stock movement in one transaction.
 7. AI tools will use registered, permission-checked application actions; they will not get direct database access.
-8. Sensitive state transitions have explicit validation and event/history records.
+8. Sensitive state transitions have explicit validation, business history records, and sanitized audit-log records written in the same transaction.
 
 ## Local development
 
