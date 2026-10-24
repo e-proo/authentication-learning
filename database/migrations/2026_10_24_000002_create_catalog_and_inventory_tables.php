@@ -61,7 +61,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
             $table->foreign(['organization_id', 'branch_id'])
-                ->references(['organization_id', 'id'])->on('branches')->nullOnDelete();
+                ->references(['organization_id', 'id'])->on('branches')->restrictOnDelete();
             $table->unique(['organization_id', 'code']);
             $table->unique(['organization_id', 'id']);
         });
