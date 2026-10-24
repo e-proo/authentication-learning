@@ -26,4 +26,49 @@ class Organization extends Model
     {
         return $this->hasMany(Membership::class);
     }
+
+    public function stores(): HasMany
+    {
+        return $this->hasMany(Store::class);
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function warehouses(): HasMany
+    {
+        return $this->hasMany(Warehouse::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function returnCases(): HasMany
+    {
+        return $this->hasMany(ReturnCase::class);
+    }
+
+    public function drivers(): HasMany
+    {
+        return $this->hasMany(FleetDriver::class);
+    }
+
+    public function vehicles(): HasMany
+    {
+        return $this->hasMany(FleetVehicle::class);
+    }
+
+    public function transportTrips(): HasMany
+    {
+        return $this->hasMany(TransportTrip::class);
+    }
+
+    public function deliveryTasks(): HasMany
+    {
+        return $this->hasMany(DeliveryTask::class);
+    }
 }
