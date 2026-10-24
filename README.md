@@ -2,7 +2,7 @@
 
 A modular platform for logistics, multi-organization commerce, inventory, marketing, finance, and permissioned AI workflows.
 
-> **Status:** the API foundation and first order-to-delivery slice are committed. Runtime verification is still required before production use. Payment settlement, public customer checkout, returns, marketing integrations, AI tools, and the Vue UI are not implemented yet.
+> **Status:** the API foundation and first order-to-delivery slice are committed. Runtime verification is still required before production use. Payment-provider webhooks, ledger accounting, refunds/settlement, public customer checkout, returns, marketing integrations, AI tools, and the Vue UI are not implemented yet.
 
 ## Architecture
 
@@ -25,6 +25,7 @@ A modular platform for logistics, multi-organization commerce, inventory, market
 - Warehouse-split fulfillment, packing, shipment creation, shipment tracking events
 - Stock deduction and reservation consumption when a shipment is picked up by the carrier
 - Delivery completion and order status history
+- Invoice snapshots, partial payment records, offline payment confirmation, and invoice/order payment-status reconciliation
 - Initial PostgreSQL-backed feature tests and GitHub Actions CI
 
 ## Core principles
@@ -63,7 +64,7 @@ Health check: `GET /api/v1/health`.
 7. Create fulfillments, pack each fulfillment, and create a shipment for each packed fulfillment.
 8. Record shipment events in order: `picked_up`, `in_transit`, then `delivered`.
 
-Use the bearer token in the `Authorization: Bearer <token>` header. See [Order-to-delivery API notes](docs/ORDER_TO_DELIVERY.md) for request examples and state rules.
+Use the bearer token in the `Authorization: Bearer <token>` header. See [Order-to-delivery API notes](docs/ORDER_TO_DELIVERY.md) and [Finance foundation notes](docs/FINANCE.md) for request examples and state rules.
 
 ## Build plan
 
@@ -72,7 +73,8 @@ Use the bearer token in the `Authorization: Bearer <token>` header. See [Order-t
 - [x] Catalog, variants, price lists, inventory balances, movements, and reservations
 - [x] Orders, warehouse-based fulfillments, shipments, delivery events, tenant-scope and idempotency tests
 - [ ] Branch-scoped workspaces and organization relationship approvals
-- [ ] Invoices, payments, refunds, settlements, and reconciliation
+- [x] Invoice snapshots and offline payment records with partial-payment reconciliation
+- [ ] Double-entry ledger, payment-provider webhooks, refunds, settlements, and reconciliation
 - [ ] Returns, failed-delivery recovery, and reverse logistics
 - [ ] Campaigns, approved external ad channel connectors, tracking, and attribution
 - [ ] Permissioned AI tool registry, approvals, usage/cost controls, and evaluations
