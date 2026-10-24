@@ -13,3 +13,15 @@
 - Apply rate limits to authentication, public quote forms, webhooks, and AI endpoints.
 - Use HTTPS in deployed environments and disable debug output in production.
 - Back up PostgreSQL and test restoration regularly.
+
+
+## Order-to-delivery controls
+
+- Organization-level endpoints require an active membership with no branch scope; branch-only membership is not treated as organization-wide permission.
+- Order creation reads price from the server-owned price list and ignores client-supplied totals.
+- Stock availability is checked while locking the balance row; the reservation and order records are committed in one transaction.
+- An idempotency key may be reused only for the same normalized request. Reusing it for another payload is rejected.
+- Fulfillment and shipment state transitions are validated; physical stock is deducted at carrier pickup, and the inventory movement is written in the same transaction.
+- Delivery-address, product, SKU, unit-price, and currency snapshots are preserved on the order.
+
+This is a foundation rather than a complete security certification. Add branch-scoped policies, rate limiting on all state-changing endpoints, audit coverage, webhook verification, and external penetration testing before production.
