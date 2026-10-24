@@ -74,4 +74,9 @@ class Order extends Model
     {
         return $this->hasMany(Shipment::class);
     }
+
+    public function returnCases(): HasMany
+    {
+        return $this->hasMany(ReturnCase::class);
+    }
 }
