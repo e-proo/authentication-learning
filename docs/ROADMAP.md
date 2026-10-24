@@ -1,36 +1,42 @@
 # Delivery roadmap
 
-## Phase 1 — Foundation
-- Laravel application scaffold and health endpoints
-- Authentication and API token/session strategy
-- Organizations, branches, memberships, roles, permissions
-- Tenant isolation tests and audit events
+## Phase 1 — Application foundation (initial implementation)
+- [x] Laravel application scaffold and API health endpoints
+- [x] Authentication endpoint foundation and Sanctum tokens
+- [x] Organizations, branches, memberships, roles, permissions
+- [ ] Branch-scoped authorization and audit-log coverage for all sensitive actions
 
-## Phase 2 — Commerce foundation
-- Stores, products, variants, price lists, category/media
-- Catalog-only and marketplace modes per organization
-- Inventory balances, movements, and reservations
+## Phase 2 — Commerce and inventory
+- [x] Stores, products, variants, and product publishing
+- [x] Price lists and per-SKU price snapshots
+- [x] Warehouses, inventory balances, stock movements, and reservations
+- [ ] Categories, media, promotions, and B2B contract terms
 
 ## Phase 3 — Order-to-delivery vertical slice
-- Quote/cart and order creation with immutable snapshots
-- Fulfillment splitting and shipment lifecycle
-- Delivery tasks, status history, proof of delivery, returns
+- [x] Order creation with address and price snapshots
+- [x] Idempotent order creation and stock reservation in a transaction
+- [x] Fulfillment grouping by warehouse
+- [x] Shipment lifecycle events and stock reconciliation at carrier pickup
+- [x] Delivery completion and order status history
+- [ ] Partial fulfillment quantities, multiple packages per fulfillment, proof-of-delivery media, returns, and failed-delivery recovery
 
 ## Phase 4 — Finance
-- Invoices, payment records, refunds, settlements
-- Idempotency, reconciliation, and audit controls
+- [ ] Invoices and invoice items
+- [ ] Payment methods, provider webhooks, refunds, and settlement
+- [ ] Reconciliation, immutable double-entry ledger integration, and payout approvals
 
 ## Phase 5 — Marketing
-- Campaign planning and creatives
-- Approval workflow and channel adapters
-- Tracking and attribution with clear measured/estimated distinctions
+- [ ] Campaign planning, budgets, creatives, and approval workflow
+- [ ] External channel adapters with explicit API/access limitations
+- [ ] Tracking, attribution, and measured-vs-estimated reporting
 
 ## Phase 6 — AI platform
-- Context-aware assistant across modules
-- Tool registry, permission checks, approvals, run history, cost controls
-- Evaluations, safety rules, monitoring
+- [ ] Context resolver for active user, organization, branch, and permissions
+- [ ] Tool registry, policy registry, approval workflow, and run history
+- [ ] Model gateway, cost/usage controls, evaluation sets, and monitoring
 
-## Phase 7 — User interface and production
-- Vue 3 + TypeScript workspaces and role-aware navigation
-- Accessibility, localization, Arabic RTL and English LTR
-- CI, integration/e2e tests, deployment, observability, backup/restore drills
+## Phase 7 — UI and production readiness
+- [ ] Vue 3 + TypeScript workspaces and role-aware navigation
+- [ ] Arabic RTL and English LTR, accessibility, and responsive layout
+- [ ] API/e2e tests, CI quality gates, structured logs, metrics, tracing
+- [ ] Production deployment guide, backups, restore drills, and security review
