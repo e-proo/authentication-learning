@@ -4,6 +4,11 @@ namespace App\Services\Inventory;
 
 use App\Models\InventoryBalance;
 use App\Models\InventoryMovement;
+use App\Models\Organization;
+use App\Models\ProductVariant;
+use App\Models\User;
+use App\Models\Warehouse;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -11,6 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class InventoryService
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     /**
      * Apply a stock adjustment atomically and append an inventory movement.
      *
@@ -18,11 +27,12 @@ class InventoryService
      * selected organization, warehouse, and SKU.
      */
     public function adjust(
+        Organization $organization,
         int $warehouseId,
         int $variantId,
         int $quantityDelta,
         string $movementType,
-        ?int $userId = null,
+        ?User $actor = null,
         ?string $idempotencyKey = null,
         array $metadata = [],
     ): InventoryMovement {
@@ -35,14 +45,28 @@ class InventoryService
         }
 
         return DB::transaction(function () use (
+            $organization,
             $warehouseId,
             $variantId,
             $quantityDelta,
             $movementType,
-            $userId,
+            $actor,
             $idempotencyKey,
             $metadata,
         ): InventoryMovement {
+            $warehouse = Warehouse::query()
+                ->where('organization_id', $organization->id)
+                ->where('is_active', true)
+                ->whereKey($warehouseId)
+                ->firstOrFail();
+
+            $variant = ProductVariant::query()
+                ->whereKey($variantId)
+                ->where('is_active', true)
+                ->whereHas('product', fn ($query) => $query
+                    ->where('organization_id', $organization->id))
+                ->firstOrFail();
+
             if ($idempotencyKey !== null) {
                 $existing = InventoryMovement::query()
                     ->where('warehouse_id', $warehouseId)
@@ -108,16 +132,27 @@ class InventoryService
             $balance->on_hand = $nextOnHand;
             $balance->save();
 
-            return InventoryMovement::query()->create([
+            $movement = InventoryMovement::query()->create([
                 'warehouse_id' => $warehouseId,
                 'product_variant_id' => $variantId,
                 'movement_type' => $movementType,
                 'quantity_delta' => $quantityDelta,
                 'idempotency_key' => $idempotencyKey,
                 'metadata' => $metadata ?: null,
-                'created_by' => $userId,
+                'created_by' => $actor?->id,
                 'created_at' => now(),
             ]);
+
+            $this->audit->record($actor, $organization, 'inventory.stock_adjusted', $movement, [
+                'warehouse_id' => $warehouse->id,
+                'product_variant_id' => $variant->id,
+                'movement_type' => $movementType,
+                'quantity_delta' => $quantityDelta,
+                'balance_on_hand' => $balance->on_hand,
+                'balance_reserved' => $balance->reserved,
+            ]);
+
+            return $movement;
         }, attempts: 3);
     }
 }
