@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -30,8 +31,8 @@ return new class extends Migration
                 ->references(['organization_id', 'id'])->on('orders')->restrictOnDelete();
             $table->unique(['organization_id', 'id']);
             $table->unique(['organization_id', 'order_id']);
-            $table->check('total_minor = subtotal_minor - discount_minor + shipping_minor + tax_minor');
-            $table->check('paid_total_minor <= total_minor');
+
+
         });
 
         Schema::create('invoice_items', function (Blueprint $table): void {
@@ -51,8 +52,8 @@ return new class extends Migration
             $table->foreign(['organization_id', 'invoice_id'])
                 ->references(['organization_id', 'id'])->on('invoices')->cascadeOnDelete();
             $table->unique(['invoice_id', 'order_item_id']);
-            $table->check('quantity > 0');
-            $table->check('line_total_minor = unit_price_minor * quantity - discount_minor + tax_minor');
+
+
         });
 
         Schema::create('payments', function (Blueprint $table): void {
@@ -81,7 +82,7 @@ return new class extends Migration
             $table->unique(['organization_id', 'id']);
             $table->unique(['organization_id', 'idempotency_key']);
             $table->index(['organization_id', 'status', 'created_at']);
-            $table->check('amount_minor > 0');
+
         });
 
         Schema::create('payment_events', function (Blueprint $table): void {
@@ -100,6 +101,14 @@ return new class extends Migration
             $table->index(['payment_id', 'created_at']);
         });
     }
+
+
+        // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
+        DB::statement('ALTER TABLE invoices ADD CONSTRAINT invoices_total_reconciles CHECK (total_minor = subtotal_minor - discount_minor + shipping_minor + tax_minor)');
+        DB::statement('ALTER TABLE invoices ADD CONSTRAINT invoices_paid_lte_total CHECK (paid_total_minor <= total_minor)');
+        DB::statement('ALTER TABLE invoice_items ADD CONSTRAINT invoice_items_quantity_positive CHECK (quantity > 0)');
+        DB::statement('ALTER TABLE invoice_items ADD CONSTRAINT invoice_items_line_total_reconciles CHECK (line_total_minor = unit_price_minor * quantity - discount_minor + tax_minor)');
+        DB::statement('ALTER TABLE payments ADD CONSTRAINT payments_amount_positive CHECK (amount_minor > 0)');
 
     public function down(): void
     {
