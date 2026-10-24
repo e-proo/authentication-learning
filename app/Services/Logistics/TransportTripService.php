@@ -69,6 +69,10 @@ class TransportTripService
                 throw new ConflictHttpException('Only planned or assigned trips can be assigned or reassigned.');
             }
 
+            if ($locked->tasks()->whereNotIn('status', ['cancelled'])->exists()) {
+                throw new ConflictHttpException('A trip with linked tasks cannot be reassigned; cancel or move those tasks first.');
+            }
+
             $driver = FleetDriver::query()
                 ->where('organization_id', $organization->id)
                 ->whereKey($driverId)
