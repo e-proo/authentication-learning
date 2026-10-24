@@ -37,6 +37,7 @@ class PaymentService
             'amount_minor' => (int) $data['amount_minor'],
             'provider' => $data['provider'] ?? null,
             'reference' => $data['reference'] ?? null,
+            'metadata' => $data['metadata'] ?? null,
         ], JSON_THROW_ON_ERROR));
 
         return DB::transaction(function () use (
