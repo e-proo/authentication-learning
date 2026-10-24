@@ -76,6 +76,7 @@ class OrganizationController extends Controller
                 'orders.manage' => 'Manage orders',
                 'shipments.manage' => 'Manage shipments',
                 'finance.view' => 'View financial records',
+                'finance.manage' => 'Issue invoices and reconcile offline payments',
                 'marketing.manage' => 'Manage marketing campaigns',
                 'ai.use' => 'Use approved AI assistant tools',
             ];
