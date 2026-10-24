@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -76,7 +77,7 @@ return new class extends Migration
             $table->unsignedInteger('reorder_level')->default(0);
             $table->timestamps();
             $table->unique(['warehouse_id', 'product_variant_id']);
-            $table->check('reserved <= on_hand');
+
         });
 
         Schema::create('inventory_movements', function (Blueprint $table): void {
@@ -95,6 +96,10 @@ return new class extends Migration
             $table->index(['reference_type', 'reference_id']);
         });
     }
+
+
+        // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
+        DB::statement('ALTER TABLE inventory_balances ADD CONSTRAINT inventory_balances_reserved_lte_on_hand CHECK (reserved <= on_hand)');
 
     public function down(): void
     {
