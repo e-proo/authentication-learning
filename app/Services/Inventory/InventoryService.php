@@ -6,7 +6,7 @@ use App\Models\InventoryBalance;
 use App\Models\InventoryMovement;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use RuntimeException;
+use Symfony\\Component\\HttpKernel\\Exception\\ConflictHttpException;\nuse Illuminate\\Validation\\ValidationException;
 
 class InventoryService
 {
@@ -54,7 +54,7 @@ class InventoryService
                         && $existing->movement_type === $movementType;
 
                     if (! $sameOperation) {
-                        throw new RuntimeException('Idempotency key was already used for a different inventory operation.');
+                        throw new ConflictHttpException('Idempotency key was already used for a different inventory operation.');
                     }
 
                     return $existing;
@@ -75,11 +75,11 @@ class InventoryService
             $nextOnHand = $balance->on_hand + $quantityDelta;
 
             if ($nextOnHand < 0) {
-                throw new RuntimeException('The adjustment would make on-hand inventory negative.');
+                throw ValidationException::withMessages(['quantity_delta' => ['The adjustment would make on-hand inventory negative.']]);
             }
 
             if ($nextOnHand < $balance->reserved) {
-                throw new RuntimeException('The adjustment would reduce on-hand inventory below the reserved quantity.');
+                throw ValidationException::withMessages(['quantity_delta' => ['The adjustment would reduce on-hand inventory below the reserved quantity.']]);
             }
 
             $balance->on_hand = $nextOnHand;
