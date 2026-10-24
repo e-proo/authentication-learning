@@ -1,0 +1,30 @@
+name: Driver Companion CI
+
+on:
+  push:
+    paths:
+      - "apps/driver-companion/**"
+      - ".github/workflows/driver-app-ci.yml"
+  pull_request:
+    paths:
+      - "apps/driver-companion/**"
+      - ".github/workflows/driver-app-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/driver-companion
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.1"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Type-check the mobile app
+        run: npm run typecheck
