@@ -51,6 +51,11 @@ class TransportTrip extends Model
         return $this->belongsTo(FleetVehicle::class, 'vehicle_id');
     }
 
+    public function events(): HasMany
+    {
+        return $this->hasMany(TransportTripEvent::class)->orderBy('occurred_at');
+    }
+
     public function tasks(): HasMany
     {
         return $this->hasMany(DeliveryTask::class, 'transport_trip_id')->orderBy('sequence_number');
