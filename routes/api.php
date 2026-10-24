@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CampaignController;
 use App\Http\Controllers\Api\V1\DeliveryTaskController;
 use App\Http\Controllers\Api\V1\FleetController;
 use App\Http\Controllers\Api\V1\TransportTripController;
@@ -107,5 +108,18 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/organizations/{organization}/delivery-tasks/{task}', [DeliveryTaskController::class, 'show']);
         Route::post('/organizations/{organization}/delivery-tasks/{task}/assign', [DeliveryTaskController::class, 'assign']);
         Route::post('/organizations/{organization}/delivery-tasks/{task}/events', [DeliveryTaskController::class, 'updateStatus']);
+
+        Route::get('/organizations/{organization}/campaigns', [CampaignController::class, 'index']);
+        Route::post('/organizations/{organization}/campaigns', [CampaignController::class, 'store']);
+        Route::get('/organizations/{organization}/campaigns/{campaign}', [CampaignController::class, 'show']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/channels', [CampaignController::class, 'createChannel']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/creatives', [CampaignController::class, 'createCreative']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/submit', [CampaignController::class, 'submitForReview']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/approve', [CampaignController::class, 'approveCampaign']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/creatives/{creative}/submit', [CampaignController::class, 'submitCreativeForReview']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/creatives/{creative}/approve', [CampaignController::class, 'approveCreative']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/channels/{channel}/publish', [CampaignController::class, 'publishChannel']);
+        Route::post('/organizations/{organization}/campaigns/{campaign}/channels/{channel}/metrics', [CampaignController::class, 'recordMetrics']);
+        Route::get('/organizations/{organization}/campaigns/{campaign}/metrics', [CampaignController::class, 'metrics']);
     });
 });
