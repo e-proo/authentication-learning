@@ -95,11 +95,10 @@ return new class extends Migration
             $table->unique(['warehouse_id', 'idempotency_key']);
             $table->index(['reference_type', 'reference_id']);
         });
-    }
-
 
         // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
         DB::statement('ALTER TABLE inventory_balances ADD CONSTRAINT inventory_balances_reserved_lte_on_hand CHECK (reserved <= on_hand)');
+    }
 
     public function down(): void
     {
