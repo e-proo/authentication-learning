@@ -22,17 +22,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/about', fn () => response()->json([
         'name' => config('app.name'),
         'modules' => [
-            'identity',
-            'organizations',
-            'catalog',
-            'pricing',
-            'inventory',
-            'orders',
-            'fulfillment',
-            'shipments',
-            'finance',
-            'marketing',
-            'ai',
+            'identity', 'organizations', 'catalog', 'pricing', 'inventory',
+            'orders', 'fulfillment', 'shipments', 'finance', 'marketing', 'ai',
         ],
         'status' => 'order-to-delivery-foundation',
     ]));
