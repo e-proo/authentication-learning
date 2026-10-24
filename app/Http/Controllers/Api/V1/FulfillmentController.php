@@ -47,7 +47,7 @@ class FulfillmentController extends Controller
             ->firstOrFail();
 
         return response()->json([
-            'data' => $fulfillments->pack($organization, $record),
+            'data' => $fulfillments->pack($organization, $record, $request->user()),
         ]);
     }
 }
