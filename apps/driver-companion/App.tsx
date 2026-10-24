@@ -197,7 +197,7 @@ export default function App() {
       ['التواصل والدعم','تعليمات المهمة والرسائل والمساعدة','✉','messages' as Screen],
       ['العمل دون اتصال والمزامنة','الأحداث المحلية والملفات والتعارضات','⟳','sync' as Screen],
       ['الأداء والتسويات','المهام والمحاولات والتحصيل ومحاضر التسليم','◷','performance' as Screen],
-    ].map(item=><Pressable key={item[0]} style={S.linkRow} onPress={() => { if(item[3]==='pickup') setSelectedTask('PU-014'); if(item[3]==='transfer') setSelectedTask('TR-018'); if(item[3]==='returns') setSelectedTask('RT-041'); go(item[3]); }}><Text style={S.linkIcon}>{item[2]}</Text><View style={{flex:1,gap:4}}><Text style={S.taskTitle}>{item[0]}</Text><Text style={S.taskMeta}>{item[1]}</Text></View><Text style={S.chevron}>‹</Text></Pressable>)}</Card>
+    ].map(item=><Pressable key={item[0]} style={S.linkRow} onPress={() => { if(item[3]==='pickup') setSelectedTask('PU-014'); if(item[3]==='transfer') setSelectedTask('TR-018'); if(item[3]==='returns') setSelectedTask('RT-041'); go(item[3] as Screen); }}><Text style={S.linkIcon}>{item[2]}</Text><View style={{flex:1,gap:4}}><Text style={S.taskTitle}>{item[0]}</Text><Text style={S.taskMeta}>{item[1]}</Text></View><Text style={S.chevron}>‹</Text></Pressable>)}</Card>
     <Card><Heading title="الخصوصية والأمان" />{['الوصول إلى بيانات المهام المسندة فقط.','تتبع موقع معلن ومحدود بالوردية/المهمة وفق السياسة.','إثباتات التسليم خاصة ولا تُنشر بروابط عامة.'].map(t=><Text key={t} style={S.bullet}>•  {t}</Text>)}</Card>
   </>;
 
@@ -338,7 +338,7 @@ const S = StyleSheet.create({
   smallAction:{backgroundColor:'#EEF3FB',borderRadius:7,paddingHorizontal:9,paddingVertical:7},
   smallActionText:{color:'#506689',fontSize:9,fontWeight:'900'},
   linkRow:{paddingVertical:10,borderTopWidth:1,borderTopColor:'#F0F2F7',flexDirection:'row',alignItems:'center',gap:9},
-  linkIcon:{width:32,height:32,borderRadius:10,alignItems:'center',justifyContent:'center',textAlign:'center',textAlignVertical:'center',backgroundColor:C.orangeSoft,color:C.orange,overflow:'hidden',fontSize:15},
+  linkIcon:{width:32,height:32,borderRadius:10,textAlign:'center',textAlignVertical:'center',backgroundColor:C.orangeSoft,color:C.orange,overflow:'hidden',fontSize:15},
   chevron:{color:'#9AA6B7',fontSize:21},
   map:{height:145,borderRadius:11,backgroundColor:'#E5ECEE',overflow:'hidden',position:'relative'},
   roadOne:{position:'absolute',width:400,height:58,left:-90,top:20,borderRadius:32,borderWidth:6,borderColor:'white',transform:[{rotate:'-24deg'}]},
