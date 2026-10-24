@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DeliveryTaskController;
+use App\Http\Controllers\Api\V1\FleetController;
+use App\Http\Controllers\Api\V1\TransportTripController;
 use App\Http\Controllers\Api\V1\FulfillmentController;
 use App\Http\Controllers\Api\V1\InventoryController;
 use App\Http\Controllers\Api\V1\InvoiceController;
@@ -84,5 +87,24 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/organizations/{organization}/returns/{returnCase}/reject', [ReturnController::class, 'reject']);
         Route::post('/organizations/{organization}/returns/{returnCase}/items/{returnItem}/receive', [ReturnController::class, 'receiveItem']);
         Route::post('/organizations/{organization}/returns/{returnCase}/close', [ReturnController::class, 'close']);
+
+        Route::get('/organizations/{organization}/drivers', [FleetController::class, 'drivers']);
+        Route::post('/organizations/{organization}/drivers', [FleetController::class, 'storeDriver']);
+        Route::get('/organizations/{organization}/vehicles', [FleetController::class, 'vehicles']);
+        Route::post('/organizations/{organization}/vehicles', [FleetController::class, 'storeVehicle']);
+
+        Route::get('/organizations/{organization}/transport-trips', [TransportTripController::class, 'index']);
+        Route::post('/organizations/{organization}/transport-trips', [TransportTripController::class, 'store']);
+        Route::get('/organizations/{organization}/transport-trips/{trip}', [TransportTripController::class, 'show']);
+        Route::post('/organizations/{organization}/transport-trips/{trip}/assign', [TransportTripController::class, 'assign']);
+        Route::post('/organizations/{organization}/transport-trips/{trip}/depart', [TransportTripController::class, 'depart']);
+        Route::post('/organizations/{organization}/transport-trips/{trip}/complete', [TransportTripController::class, 'complete']);
+        Route::post('/organizations/{organization}/transport-trips/{trip}/cancel', [TransportTripController::class, 'cancel']);
+
+        Route::get('/organizations/{organization}/delivery-tasks', [DeliveryTaskController::class, 'index']);
+        Route::post('/organizations/{organization}/delivery-tasks', [DeliveryTaskController::class, 'store']);
+        Route::get('/organizations/{organization}/delivery-tasks/{task}', [DeliveryTaskController::class, 'show']);
+        Route::post('/organizations/{organization}/delivery-tasks/{task}/assign', [DeliveryTaskController::class, 'assign']);
+        Route::post('/organizations/{organization}/delivery-tasks/{task}/events', [DeliveryTaskController::class, 'updateStatus']);
     });
 });
