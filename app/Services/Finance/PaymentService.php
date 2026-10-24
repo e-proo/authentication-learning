@@ -63,6 +63,22 @@ class PaymentService
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            // Re-check after acquiring the invoice lock to resolve concurrent retries.
+            $concurrentRetry = Payment::query()
+                ->where('organization_id', $organization->id)
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+
+            if ($concurrentRetry) {
+                if (! hash_equals((string) $concurrentRetry->request_fingerprint, $fingerprint)) {
+                    throw new ConflictHttpException(
+                        'This Idempotency-Key was already used for a different payment request.'
+                    );
+                }
+
+                return ['payment' => $concurrentRetry->load(['invoice', 'events']), 'created' => false];
+            }
+
             if (in_array($invoice->status, ['void', 'paid'], true)) {
                 throw new ConflictHttpException('A payment cannot be added to a void or fully paid invoice.');
             }
