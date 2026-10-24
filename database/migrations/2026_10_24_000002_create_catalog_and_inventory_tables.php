@@ -98,6 +98,8 @@ return new class extends Migration
 
         // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
         DB::statement('ALTER TABLE inventory_balances ADD CONSTRAINT inventory_balances_reserved_lte_on_hand CHECK (reserved <= on_hand)');
+        DB::statement('ALTER TABLE inventory_balances ADD CONSTRAINT inventory_balances_nonnegative CHECK (on_hand >= 0 AND reserved >= 0 AND reorder_level >= 0)');
+        DB::statement('ALTER TABLE inventory_movements ADD CONSTRAINT inventory_movements_nonzero_delta CHECK (quantity_delta <> 0)');
     }
 
     public function down(): void
