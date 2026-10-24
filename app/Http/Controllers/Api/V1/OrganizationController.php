@@ -76,6 +76,8 @@ class OrganizationController extends Controller
                 'orders.view' => 'View orders',
                 'orders.manage' => 'Manage orders',
                 'shipments.manage' => 'Manage shipments',
+                'returns.view' => 'View return cases',
+                'returns.manage' => 'Manage returns and receipts',
                 'finance.view' => 'View financial records',
                 'finance.manage' => 'Issue invoices and reconcile offline payments',
                 'marketing.manage' => 'Manage marketing campaigns',
