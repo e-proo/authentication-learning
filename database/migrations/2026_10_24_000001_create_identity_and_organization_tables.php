@@ -95,6 +95,17 @@ return new class extends Migration
             $table->primary(['role_id', 'permission_id']);
         });
 
+        Schema::create('personal_access_tokens', function (Blueprint $table): void {
+            $table->id();
+            $table->morphs('tokenable');
+            $table->string('name');
+            $table->string('token', 64)->unique();
+            $table->text('abilities')->nullable();
+            $table->timestamp('last_used_at')->nullable();
+            $table->timestamp('expires_at')->nullable()->index();
+            $table->timestamps();
+        });
+
         Schema::create('audit_logs', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -113,6 +124,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('audit_logs');
+        Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('role_permissions');
         Schema::dropIfExists('membership_roles');
         Schema::dropIfExists('permissions');
