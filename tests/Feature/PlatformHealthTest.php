@@ -73,6 +73,12 @@ class PlatformHealthTest extends TestCase
         $orderId = $orderResponse->json('data.id');
         $orderItemId = Order::query()->findOrFail($orderId)->items()->value('id');
 
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $organization->id,
+            'action' => 'order.created',
+            'subject_id' => (string) $orderId,
+        ]);
+
         $this->assertDatabaseHas('inventory_balances', [
             'warehouse_id' => $warehouse->id,
             'product_variant_id' => $variant->id,
@@ -122,6 +128,11 @@ class PlatformHealthTest extends TestCase
         ])->assertOk()->assertJsonPath('data.status', 'delivered');
 
         $this->assertDatabaseHas('orders', ['id' => $orderId, 'status' => 'delivered']);
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $organization->id,
+            'action' => 'shipment.status_changed',
+            'subject_id' => (string) $shipmentId,
+        ]);
         $this->assertDatabaseHas('stock_reservations', ['order_item_id' => $orderItemId, 'status' => 'consumed']);
         $this->assertDatabaseHas('inventory_movements', [
             'warehouse_id' => $warehouse->id,
@@ -239,6 +250,11 @@ class PlatformHealthTest extends TestCase
             'paid_total_minor' => 2500,
         ]);
         $this->assertDatabaseHas('orders', ['id' => $orderId, 'payment_status' => 'paid']);
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $organization->id,
+            'action' => 'payment.confirmed_offline',
+            'subject_id' => (string) $secondPaymentId,
+        ]);
     }
 
     public function test_membership_in_another_organization_does_not_grant_access(): void
