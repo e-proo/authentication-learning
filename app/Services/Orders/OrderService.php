@@ -3,6 +3,7 @@
 namespace App\Services\Orders;
 
 use App\Models\InventoryBalance;
+use App\Models\Invoice;
 use App\Services\Audit\AuditLogger;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -94,6 +95,26 @@ class OrderService
                 throw ValidationException::withMessages([
                     'price_list_id' => ['The selected price list is unavailable.'],
                 ]);
+            }
+
+            // The price-list row lock serializes retries for the same pricing context.
+            // Re-check the key after acquiring it so a concurrent retry returns the original order.
+            if ($idempotencyKey !== null) {
+                $concurrentRetry = Order::query()
+                    ->where('organization_id', $organization->id)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->with(['items', 'statusHistory', 'fulfillments'])
+                    ->first();
+
+                if ($concurrentRetry) {
+                    if (! hash_equals((string) $concurrentRetry->request_fingerprint, $fingerprint)) {
+                        throw new ConflictHttpException(
+                            'This Idempotency-Key was already used for a different order request.'
+                        );
+                    }
+
+                    return ['order' => $concurrentRetry, 'created' => false];
+                }
             }
 
             if ($priceList->currency !== $store->currency) {
@@ -298,6 +319,15 @@ class OrderService
             if ($lockedOrder->status !== 'confirmed') {
                 throw new ConflictHttpException(
                     'Only confirmed orders that have not entered fulfillment can be cancelled.'
+                );
+            }
+
+            if (Invoice::query()
+                ->where('organization_id', $organization->id)
+                ->where('order_id', $lockedOrder->id)
+                ->exists()) {
+                throw new ConflictHttpException(
+                    'This order has an issued invoice. Use the finance cancellation workflow before cancelling it.'
                 );
             }
 
