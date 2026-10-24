@@ -66,5 +66,12 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/organizations/{organization}/fulfillments/{fulfillment}/shipments', [ShipmentController::class, 'store']);
         Route::get('/organizations/{organization}/shipments/{shipment}', [ShipmentController::class, 'show']);
         Route::post('/organizations/{organization}/shipments/{shipment}/events', [ShipmentController::class, 'updateStatus']);
+
+        Route::get('/organizations/{organization}/invoices', [InvoiceController::class, 'index']);
+        Route::post('/organizations/{organization}/orders/{order}/invoice', [InvoiceController::class, 'issueFromOrder']);
+        Route::get('/organizations/{organization}/invoices/{invoice}', [InvoiceController::class, 'show']);
+        Route::get('/organizations/{organization}/payments', [PaymentController::class, 'index']);
+        Route::post('/organizations/{organization}/payments', [PaymentController::class, 'store']);
+        Route::post('/organizations/{organization}/payments/{payment}/confirm', [PaymentController::class, 'confirm']);
     });
 });
