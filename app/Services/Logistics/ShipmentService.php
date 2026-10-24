@@ -151,7 +151,7 @@ class ShipmentService
             }
 
             if ($nextStatus === 'picked_up') {
-                $this->dispatchStock($organization, $locked);
+                $this->dispatchStock($organization, $locked, $actor);
                 $locked->shipped_at = now();
                 $locked->fulfillment->status = 'shipped';
                 $locked->fulfillment->shipped_at = now();
@@ -213,7 +213,7 @@ class ShipmentService
         }, attempts: 3);
     }
 
-    private function dispatchStock(Organization $organization, Shipment $shipment): void
+    private function dispatchStock(Organization $organization, Shipment $shipment, User $actor): void
     {
         foreach ($shipment->items as $shipmentItem) {
             $reservation = StockReservation::query()
@@ -258,7 +258,7 @@ class ShipmentService
                     'reference_type' => Shipment::class,
                     'reference_id' => (string) $shipment->id,
                     'metadata' => ['order_item_id' => $shipmentItem->order_item_id],
-                    'created_by' => null,
+                    'created_by' => $actor->id,
                     'created_at' => now(),
                 ],
             );
