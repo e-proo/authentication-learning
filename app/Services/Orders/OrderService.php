@@ -3,6 +3,7 @@
 namespace App\Services\Orders;
 
 use App\Models\InventoryBalance;
+use App\Services\Audit\AuditLogger;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusHistory;
@@ -20,6 +21,10 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class OrderService
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     /**
      * Create a confirmed order and reserve inventory in one database transaction.
      *
@@ -263,6 +268,13 @@ class OrderService
                 'created_at' => now(),
             ]);
 
+            $this->audit->record($actor, $organization, 'order.created', $order, [
+                'order_number' => $order->order_number,
+                'total_minor' => $order->total_minor,
+                'currency' => $order->currency,
+                'item_count' => count($prepared),
+            ]);
+
             return [
                 'order' => $order->load(['items', 'statusHistory']),
                 'created' => true,
@@ -327,6 +339,11 @@ class OrderService
                 'actor_user_id' => $actor->id,
                 'note' => 'Order cancelled; reserved stock released.',
                 'created_at' => now(),
+            ]);
+
+            $this->audit->record($actor, $organization, 'order.cancelled', $lockedOrder, [
+                'order_number' => $lockedOrder->order_number,
+                'released_reservation_count' => $reservations->count(),
             ]);
 
             return $lockedOrder->load(['items', 'statusHistory']);
