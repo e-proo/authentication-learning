@@ -174,7 +174,7 @@ class ReturnService
                 ->firstOrFail();
 
             if ($locked->status === $nextStatus) {
-                return $locked->load(['items.orderItem.receipt', 'statusHistory', 'order']);
+                return $locked->load(['items.orderItem', 'items.receipt', 'statusHistory', 'order']);
             }
 
             if ($locked->status !== 'requested') {
@@ -209,7 +209,7 @@ class ReturnService
                 'order_id' => $locked->order_id,
             ]);
 
-            return $locked->load(['items.orderItem.receipt', 'statusHistory', 'order']);
+            return $locked->load(['items.orderItem', 'items.receipt', 'statusHistory', 'order']);
         }, attempts: 3);
     }
 
@@ -394,7 +394,7 @@ class ReturnService
                 ->firstOrFail();
 
             if ($locked->status === 'closed') {
-                return $locked->load(['items.orderItem.receipt', 'statusHistory', 'order']);
+                return $locked->load(['items.orderItem', 'items.receipt', 'statusHistory', 'order']);
             }
 
             if ($locked->status !== 'received') {
@@ -423,7 +423,7 @@ class ReturnService
                 'order_id' => $locked->order_id,
             ]);
 
-            return $locked->load(['items.orderItem.receipt', 'statusHistory', 'order']);
+            return $locked->load(['items.orderItem', 'items.receipt', 'statusHistory', 'order']);
         }, attempts: 3);
     }
 }
