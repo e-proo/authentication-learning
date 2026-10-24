@@ -268,7 +268,7 @@ class ShipmentService
             $reservation->save();
 
             InventoryMovement::query()->firstOrCreate(
-                ['idempotency_key' => 'shipment:'.$shipment->id.':item:'.$shipmentItem->order_item_id.':dispatch'],
+                ['warehouse_id' => $reservation->warehouse_id, 'idempotency_key' => 'shipment:'.$shipment->id.':item:'.$shipmentItem->order_item_id.':dispatch'],
                 [
                     'warehouse_id' => $reservation->warehouse_id,
                     'product_variant_id' => $reservation->product_variant_id,
