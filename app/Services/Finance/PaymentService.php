@@ -8,12 +8,17 @@ use App\Models\Organization;
 use App\Models\Payment;
 use App\Models\PaymentEvent;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class PaymentService
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     /**
      * Record a payment attempt. A record in pending state is not proof of payment.
      *
@@ -134,6 +139,14 @@ class PaymentService
                 'created_at' => now(),
             ]);
 
+            $this->audit->record($actor, $organization, 'payment.recorded', $payment, [
+                'payment_method' => $payment->payment_method,
+                'amount_minor' => $payment->amount_minor,
+                'currency' => $payment->currency,
+                'status' => $payment->status,
+                'invoice_id' => $invoice->id,
+            ]);
+
             return ['payment' => $payment->load(['invoice', 'events']), 'created' => true];
         }, attempts: 3);
     }
@@ -240,6 +253,14 @@ class PaymentService
                 ? 'paid'
                 : ($paidTotal > 0 ? 'partial' : 'pending');
             $order->save();
+
+            $this->audit->record($actor, $organization, 'payment.confirmed_offline', $locked, [
+                'payment_method' => $locked->payment_method,
+                'amount_minor' => $locked->amount_minor,
+                'currency' => $locked->currency,
+                'invoice_id' => $invoice->id,
+                'invoice_paid_total_minor' => $paidTotal,
+            ]);
 
             return $locked->load(['invoice', 'events']);
         }, attempts: 3);
