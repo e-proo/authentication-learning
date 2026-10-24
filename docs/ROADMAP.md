@@ -30,9 +30,10 @@
 - [ ] Immutable double-entry ledger, reconciliation imports, merchant/courier payouts, and approval separation of duties
 
 ## Phase 5 — Marketing
-- [ ] Campaign planning, budgets, creatives, and approval workflow
-- [ ] External channel adapters with explicit API/access limitations
-- [ ] Tracking, attribution, and measured-vs-estimated reporting
+- [x] Campaign planning, budgets, channel-specific creatives, and separate campaign/creative approval workflow
+- [x] Internal-only campaign publication and daily metrics tagged manual/imported/estimated
+- [ ] External channel adapters with verified platform API access, event/webhook handling, and explicit permission boundaries
+- [ ] Tracking, attribution, and measured-vs-estimated reporting connected to source evidence
 
 ## Phase 6 — AI platform
 - [ ] Context resolver for active user, organization, branch, and permissions
