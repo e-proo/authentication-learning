@@ -166,5 +166,6 @@ Bank transfer confirmation requires a reference. Cash-on-delivery confirmation i
 - Public customer checkout, cart sessions, guest customers, tax/shipping rate calculators, and payment provider webhooks are not included yet.
 - Shipping/tax totals are currently zero; configure provider-verified rates before using these endpoints commercially.
 - One order item is allocated to one warehouse; partial item allocation and multiple packages per fulfillment are future work.
+- Sanitized audit records are created for order, stock, fulfillment, shipment, invoice, and payment actions.
 - Returns, failed-delivery reattempt policies, proof-of-delivery media, refunds, and settlement accounting are not implemented.
 - Test the workflow against PostgreSQL with php artisan test before deployment. Do not use production money or inventory until database migrations and integration tests pass.
