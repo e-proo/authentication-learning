@@ -29,7 +29,8 @@ Route::prefix('v1')->group(function (): void {
         'name' => config('app.name'),
         'modules' => [
             'identity', 'organizations', 'catalog', 'pricing', 'inventory',
-            'orders', 'fulfillment', 'shipments', 'finance', 'marketing', 'ai',
+            'orders', 'fulfillment', 'shipments', 'returns', 'fleet', 'transport',
+            'delivery_tasks', 'finance', 'marketing', 'ai',
         ],
         'status' => 'order-to-delivery-foundation',
     ]));
