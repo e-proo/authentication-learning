@@ -46,7 +46,10 @@ class PaymentController extends Controller
             'amount_minor' => ['required', 'integer', 'min:1', 'max:9000000000000000'],
             'provider' => ['nullable', 'string', 'max:120'],
             'reference' => ['nullable', 'string', 'max:180'],
-            'metadata' => ['nullable', 'array'],
+            'metadata' => ['nullable', 'array:source,external_reference,receipt_id'],
+            'metadata.source' => ['nullable', 'string', 'max:80'],
+            'metadata.external_reference' => ['nullable', 'string', 'max:180'],
+            'metadata.receipt_id' => ['nullable', 'string', 'max:180'],
         ]);
 
         $key = $request->header('Idempotency-Key');
