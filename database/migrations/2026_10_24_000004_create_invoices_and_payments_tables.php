@@ -104,6 +104,8 @@ return new class extends Migration
         // PostgreSQL CHECK constraints are expressed as SQL statements because Blueprint has no portable check() command.
         DB::statement('ALTER TABLE invoices ADD CONSTRAINT invoices_total_reconciles CHECK (total_minor = subtotal_minor - discount_minor + shipping_minor + tax_minor)');
         DB::statement('ALTER TABLE invoices ADD CONSTRAINT invoices_paid_lte_total CHECK (paid_total_minor <= total_minor)');
+        DB::statement('ALTER TABLE invoices ADD CONSTRAINT invoices_amounts_nonnegative CHECK (subtotal_minor >= 0 AND discount_minor >= 0 AND discount_minor <= subtotal_minor AND shipping_minor >= 0 AND tax_minor >= 0 AND total_minor >= 0 AND paid_total_minor >= 0)');
+        DB::statement('ALTER TABLE invoice_items ADD CONSTRAINT invoice_items_amounts_nonnegative CHECK (unit_price_minor >= 0 AND discount_minor >= 0 AND tax_minor >= 0 AND line_total_minor >= 0)');
         DB::statement('ALTER TABLE invoice_items ADD CONSTRAINT invoice_items_quantity_positive CHECK (quantity > 0)');
         DB::statement('ALTER TABLE invoice_items ADD CONSTRAINT invoice_items_line_total_reconciles CHECK (line_total_minor = unit_price_minor * quantity - discount_minor + tax_minor)');
         DB::statement('ALTER TABLE payments ADD CONSTRAINT payments_amount_positive CHECK (amount_minor > 0)');
