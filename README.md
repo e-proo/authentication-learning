@@ -30,9 +30,16 @@ Apps share identity, domain APIs, canonical shipment/order events and authorizat
 - [Applications and workspaces architecture](docs/APPLICATIONS_AND_WORKSPACES.md) — defines separate products, audiences, boundaries and cross-application invariants.
 - [Driver Companion application specification](docs/DRIVER_COMPANION_SPEC.md) — dedicated mobile app scope including offline workflow, scans, proof, COD, cash handover, vehicle checks, returns and release acceptance gates.
 - [Branch, Office, Depot and Hub specification](docs/BRANCH_OFFICE_HUB_SPEC.md) — counter booking, receiving, sortation, manifests, transfers, customer pickup, cash desk, investigation and reporting.
-- [WMS, TMS and Fleet specifications](docs/WMS_TMS_FLEET_SPEC.md) — independent warehouse, transportation/linehaul, and fleet/workshop products.
+- [WMS, TMS and Fleet overview specification](docs/WMS_TMS_FLEET_SPEC.md) — overview of separate warehouse, transportation/linehaul, and fleet/workshop products.
+- [Dedicated WMS specification](docs/WMS_SPEC.md) — location-based receiving, storage, replenishment, picking, packing, loading, inventory controls and exceptions.
+- [Dedicated Dispatch and Route Planning specification](docs/DISPATCH_ROUTE_PLANNING_SPEC.md) — capacity-aware assignment, route planning, live monitoring and exception management.
+- [Dedicated Fleet Management specification](docs/FLEET_MANAGEMENT_SPEC.md) — vehicle lifecycle, maintenance, inspections, parts, fuel, incidents and operating costs.
+- [Dedicated TMS/Linehaul specification](docs/TMS_LINEHAUL_SPEC.md) — carrier tendering, lanes, loads, trips, freight charges and handoffs.
+- [Shipment Visibility and Carrier Integration specification](docs/SHIPMENT_VISIBILITY_SPEC.md) — package-level tracking, verified event ingestion, ETA, labels, manifests and provider adapters.
+- [Merchant and Customer Portals specification](docs/MERCHANT_CUSTOMER_PORTALS_SPEC.md) — separate shipper and recipient self-service products.
+- [Finance, COD and Settlement specification](docs/FINANCE_COD_SETTLEMENT_SPEC.md) — cash collection, driver handover, branch till, reconciliation, payouts and ledger controls.
 - [Branch & Parcel Office detailed specification](docs/BRANCH_OFFICE_OPERATIONS_SPEC.md) — additional acceptance tests and counter/custody/cash workflows.
-- [Application portfolio preview](preview.html) — directory of separate apps/workspaces, not an operational dashboard.
+- [Application portfolio preview](preview.html) — launcher for separate products, not an operational dashboard.
 - [Standalone Driver Companion preview](driver-app-preview.html) — interactive mobile-first prototype with task, route, COD, inspection, return and offline/sync mock flows; not connected to the backend.
 - [Delivery roadmap](docs/ROADMAP.md) — implementation stages with clear status labels.
 
