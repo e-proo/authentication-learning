@@ -199,3 +199,6 @@ When every return line has a receipt, the return moves to received. Close it wit
 - Sanitized audit records are created for order, stock, fulfillment, shipment, invoice, and payment actions.
 - Automated refunds, failed-delivery reattempt policies, proof-of-delivery media, and settlement accounting are not implemented.
 - Test the workflow against PostgreSQL with php artisan test before deployment. Do not use production money or inventory until database migrations and integration tests pass.
+
+
+See [Fleet, trips, and delivery tasks](TRANSPORT_AND_DELIVERY_TASKS.md) for the internal fleet execution workflow and its current limitations.
