@@ -6,20 +6,26 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Order;
 use App\Models\Organization;
+use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class InvoiceService
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     /**
      * Issue at most one invoice for an order and snapshot its commercial lines.
      *
      * @return array{invoice: Invoice, created: bool}
      */
-    public function issueForOrder(Organization $organization, Order $order): array
+    public function issueForOrder(Organization $organization, Order $order, User $actor): array
     {
-        return DB::transaction(function () use ($organization, $order): array {
+        return DB::transaction(function () use ($organization, $order, $actor): array {
             $lockedOrder = Order::query()
                 ->where('organization_id', $organization->id)
                 ->whereKey($order->id)
@@ -71,6 +77,14 @@ class InvoiceService
                     'line_total_minor' => $orderItem->line_total_minor,
                 ]);
             }
+
+            $this->audit->record($actor, $organization, 'invoice.issued', $invoice, [
+                'invoice_number' => $invoice->invoice_number,
+                'order_id' => $lockedOrder->id,
+                'total_minor' => $invoice->total_minor,
+                'currency' => $invoice->currency,
+                'line_count' => $lockedOrder->items->count(),
+            ]);
 
             return ['invoice' => $invoice->load('items'), 'created' => true];
         }, attempts: 3);
