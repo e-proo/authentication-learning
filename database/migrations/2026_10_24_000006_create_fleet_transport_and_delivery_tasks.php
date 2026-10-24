@@ -98,6 +98,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('organization_id')->constrained()->restrictOnDelete();
             $table->foreignId('shipment_id')->nullable();
+            $table->foreignId('return_case_id')->nullable();
             $table->foreignId('transport_trip_id')->nullable();
             $table->foreignId('driver_id')->nullable();
             $table->string('task_number')->unique();
@@ -122,6 +123,8 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign(['organization_id', 'shipment_id'])
                 ->references(['organization_id', 'id'])->on('shipments')->restrictOnDelete();
+            $table->foreign(['organization_id', 'return_case_id'])
+                ->references(['organization_id', 'id'])->on('return_cases')->restrictOnDelete();
             $table->foreign(['organization_id', 'transport_trip_id'])
                 ->references(['organization_id', 'id'])->on('transport_trips')->restrictOnDelete();
             $table->foreign(['organization_id', 'driver_id'])
