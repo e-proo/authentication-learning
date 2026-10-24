@@ -73,6 +73,26 @@ class InventoryService
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            // Re-check after waiting for the row lock so concurrent retries return the original movement.
+            if ($idempotencyKey !== null) {
+                $concurrentRetry = InventoryMovement::query()
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+
+                if ($concurrentRetry) {
+                    $sameOperation = (int) $concurrentRetry->warehouse_id === $warehouseId
+                        && (int) $concurrentRetry->product_variant_id === $variantId
+                        && (int) $concurrentRetry->quantity_delta === $quantityDelta
+                        && $concurrentRetry->movement_type === $movementType;
+
+                    if (! $sameOperation) {
+                        throw new ConflictHttpException('Idempotency key was already used for a different inventory operation.');
+                    }
+
+                    return $concurrentRetry;
+                }
+            }
+
             $nextOnHand = $balance->on_hand + $quantityDelta;
 
             if ($nextOnHand < 0) {
