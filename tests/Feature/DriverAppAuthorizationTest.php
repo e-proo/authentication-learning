@@ -15,6 +15,7 @@ class DriverAppAuthorizationTest extends TestCase
             ['GET', '/api/v1/driver/tasks/summary'],
             ['GET', '/api/v1/driver/tasks/1'],
             ['GET', '/api/v1/driver/tasks/1/events'],
+            ['POST', '/api/v1/driver/tasks/1/evidence'],
             ['POST', '/api/v1/driver/tasks/1/events'],
             ['GET', '/api/v1/driver/shifts/current'],
             ['POST', '/api/v1/driver/shifts/start'],
