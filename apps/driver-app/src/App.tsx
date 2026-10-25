@@ -87,9 +87,10 @@ export default function App() {
   });
 
   const doRefresh = message(async () => { await refresh(); setNotice('تم تحديث البيانات.'); });
-  const changeProfile = message(async (id?: string) => {
-    const next = id || profileId; setProfileId(next); await refresh(token, next); setNotice('تم تغيير ملف السائق.');
-  });
+  const changeProfile = (id: string) => {
+    setProfileId(id);
+    void message(async () => { await refresh(token, id); setNotice('تم تغيير ملف السائق.'); })();
+  };
 
   const transition = (task: Task, status: string) => message(async () => {
     const payload: Record<string, unknown> = { status, metadata: { source: 'driver_app' } };
@@ -123,7 +124,6 @@ export default function App() {
     const form = new FormData(); form.append('file', file); form.append('evidence_type', file.type === 'application/pdf' ? 'document' : 'photo');
     form.append('driver_profile_id', profileId);
     const result = await api<ApiResponse<{ proof_reference: string }>>(`/driver/tasks/${task.id}/evidence`, token, { method: 'POST', body: form });
-    await api(`/driver/tasks/${task.id}/events`, token, { method: 'POST', body: json({ status: task.status, notes: 'evidence_uploaded' }) }).catch(() => undefined);
     setTasks(current => current.map(t => t.id === task.id ? { ...t, proof_reference: result.data.proof_reference } : t));
     setSelected(current => current?.id === task.id ? { ...current, proof_reference: result.data.proof_reference } : current);
     setNotice('تم رفع الإثبات إلى التخزين الخاص. أكمل المهمة بعد التأكد من بيانات التسليم.');
@@ -135,7 +135,23 @@ export default function App() {
   });
   const endShift = message(async () => {
     if (!shift) return;
-    await api(`/driver/shifts/${shift.id}/end`, token, { method: 'POST', body: json({}) });
+    const payload: Record<string, unknown> = {};
+    if (shift.vehicle) {
+      const rawOdometer = window.prompt('أدخل قراءة عداد الكيلومترات عند نهاية الوردية:');
+      if (rawOdometer === null || rawOdometer.trim() === '' || !/^\\d+$/.test(rawOdometer.trim())) {
+        throw new Error('قراءة العداد النهائية مطلوبة ويجب أن تكون رقمًا صحيحًا.');
+      }
+      payload.odometer_end = Number(rawOdometer);
+      const checklist: Record<string, boolean> = {};
+      for (const [key, label] of [['tires', 'الإطارات'], ['brakes', 'الفرامل'], ['lights', 'الأنوار'], ['mirrors', 'المرايا'], ['safety_equipment', 'معدات السلامة'], ['cargo_area', 'منطقة الحمولة']]) {
+        checklist[key] = window.confirm(`هل ${label} سليمة بعد الوردية؟ اضغط إلغاء إذا وُجد عيب.`);
+      }
+      payload.post_trip_checklist = checklist;
+      if (Object.values(checklist).some(value => !value)) {
+        payload.defect_notes = window.prompt('صف العيوب المكتشفة (مطلوب للمراجعة):') || 'تم رصد عيب في فحص ما بعد الوردية.';
+      }
+    }
+    await api(`/driver/shifts/${shift.id}/end`, token, { method: 'POST', body: json(payload) });
     await refresh(); setNotice('تم إنهاء الوردية.');
   });
 
