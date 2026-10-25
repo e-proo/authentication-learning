@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CampaignController;
 use App\Http\Controllers\Api\V1\DeliveryTaskController;
+use App\Http\Controllers\Api\V1\DriverAppController;
 use App\Http\Controllers\Api\V1\FleetController;
 use App\Http\Controllers\Api\V1\TransportTripController;
 use App\Http\Controllers\Api\V1\FulfillmentController;
@@ -44,6 +45,19 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function (): void {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+        // Driver Companion endpoints are scoped to active driver profiles linked
+        // to the authenticated user. They do not require fleet-admin permissions.
+        Route::prefix('driver')->middleware('throttle:120,1')->group(function (): void {
+            Route::get('/me', [DriverAppController::class, 'me']);
+            Route::get('/vehicles', [DriverAppController::class, 'vehicles']);
+            Route::get('/tasks', [DriverAppController::class, 'tasks']);
+            Route::get('/tasks/{task}', [DriverAppController::class, 'showTask']);
+            Route::post('/tasks/{task}/events', [DriverAppController::class, 'updateTask']);
+            Route::get('/shifts/current', [DriverAppController::class, 'currentShift']);
+            Route::post('/shifts/start', [DriverAppController::class, 'startShift']);
+            Route::post('/shifts/{shift}/end', [DriverAppController::class, 'endShift']);
+        });
 
         Route::get('/organizations', [OrganizationController::class, 'index']);
         Route::post('/organizations', [OrganizationController::class, 'store']);
