@@ -12,12 +12,27 @@ All endpoints require a valid Sanctum-authenticated user. Requests are additiona
 | --- | --- | --- |
 | GET | `/me` | Return the authenticated user's linked driver profiles and active shifts |
 | GET | `/vehicles?driver_profile_id={id}` | List eligible vehicles attached to the selected driver's active trips |
-| GET | `/tasks` | List tasks assigned to the user's active driver profiles; supports `driver_profile_id`, `status`, and pagination |
+| GET | `/tasks` | List tasks assigned to the user's active driver profiles; supports `driver_profile_id`, `status`, `task_type`, and pagination |
 | GET | `/tasks/{task}` | Read one task only when assigned to a linked active profile |
 | POST | `/tasks/{task}/events` | Submit a supported task status transition |
 | GET | `/shifts/current` | Read active shifts for linked active driver profiles |
 | POST | `/shifts/start` | Start a shift for a linked active driver profile |
 | POST | `/shifts/{shift}/end` | End the authenticated user's active shift |
+
+## Driver task list filters
+
+The task list accepts these optional query parameters:
+
+| Parameter | Allowed values | Default |
+| --- | --- | --- |
+| `driver_profile_id` | Integer ID of a driver profile linked to the authenticated user | All linked active profiles |
+| `status` | `queued`, `assigned`, `en_route`, `arrived`, `completed`, `failed`, `cancelled` | All statuses |
+| `task_type` | `collection`, `hub_delivery`, `last_mile`, `return_pickup` | All task types |
+| `per_page` | Integer from 1 to 100 | 50 |
+
+Example: `GET /api/v1/driver/tasks?status=assigned&task_type=last_mile&per_page=20`
+
+The response uses Laravel pagination metadata, so clients can request the next page without downloading every task at once. The service applies the driver-profile scope before filters, preventing these filters from widening access to another driver's tasks.
 
 ## Task transition rules
 
