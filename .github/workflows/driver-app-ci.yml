@@ -26,5 +26,9 @@ jobs:
           node-version: "22.13.1"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Verify Expo SDK dependency compatibility
+        run: npx expo install --check
       - name: Type-check the mobile app
         run: npm run typecheck
+      - name: Export web bundle
+        run: npx expo export --platform web
