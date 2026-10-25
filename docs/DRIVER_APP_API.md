@@ -12,12 +12,24 @@ All endpoints require a valid Sanctum-authenticated user. Requests are additiona
 | --- | --- | --- |
 | GET | `/me` | Return the authenticated user's linked driver profiles and active shifts |
 | GET | `/vehicles?driver_profile_id={id}` | List eligible vehicles attached to the selected driver's active trips |
+| GET | `/tasks/summary` | Return task counts by status and type for the linked active driver profile(s) |
 | GET | `/tasks` | List tasks assigned to the user's active driver profiles; supports `driver_profile_id`, `status`, `task_type`, and pagination |
 | GET | `/tasks/{task}` | Read one task only when assigned to a linked active profile |
 | POST | `/tasks/{task}/events` | Submit a supported task status transition |
 | GET | `/shifts/current` | Read active shifts for linked active driver profiles |
 | POST | `/shifts/start` | Start a shift for a linked active driver profile |
 | POST | `/shifts/{shift}/end` | End the authenticated user's active shift |
+
+## Driver dashboard summary
+
+Call `GET /api/v1/driver/tasks/summary` to build the driver's home-screen counters without downloading the full task list. Optionally pass `driver_profile_id` to scope the summary to one linked active profile.
+
+The response includes:
+
+- `total`: total tasks across the selected active profile(s)
+- `active`: tasks currently `assigned`, `en_route`, or `arrived`
+- `by_status`: counts grouped by each status currently present in the data
+- `by_type`: counts grouped by task type currently present in the data
 
 ## Driver task list filters
 
