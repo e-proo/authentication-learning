@@ -107,6 +107,36 @@ class DriverPortalService
         return $query;
     }
 
+    public function taskSummary(User $user, ?int $profileId = null): array
+    {
+        $driverIds = $this->activeProfiles($user, $profileId)->pluck('id');
+
+        $byStatus = DeliveryTask::query()
+            ->whereIn('driver_id', $driverIds)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->map(fn ($total): int => (int) $total)
+            ->all();
+
+        $byType = DeliveryTask::query()
+            ->whereIn('driver_id', $driverIds)
+            ->selectRaw('task_type, COUNT(*) as total')
+            ->groupBy('task_type')
+            ->pluck('total', 'task_type')
+            ->map(fn ($total): int => (int) $total)
+            ->all();
+
+        return [
+            'total' => array_sum($byStatus),
+            'active' => (int) ($byStatus['assigned'] ?? 0)
+                + (int) ($byStatus['en_route'] ?? 0)
+                + (int) ($byStatus['arrived'] ?? 0),
+            'by_status' => $byStatus,
+            'by_type' => $byType,
+        ];
+    }
+
     public function findAssignedTask(User $user, int $taskId, ?int $profileId = null, bool $lock = false): DeliveryTask
     {
         $driverIds = $this->activeProfiles($user, $profileId)->pluck('id');
