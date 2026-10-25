@@ -48,4 +48,9 @@ class FleetDriver extends Model
     {
         return $this->hasMany(DeliveryTask::class, 'driver_id');
     }
+
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(DriverShift::class, 'driver_id');
+    }
 }
