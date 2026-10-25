@@ -22,6 +22,10 @@ All endpoints require a valid Sanctum-authenticated user. Requests are additiona
 | POST | `/shifts/start` | Start a shift for a linked active driver profile |
 | POST | `/shifts/{shift}/end` | End the authenticated user's active shift |
 
+## Standalone driver interface
+
+The independent Arabic RTL web client lives in `apps/driver-app`. See `apps/driver-app/README.md` for Node.js requirements and local run commands. It consumes only the `/api/v1/driver` API surface for driver operations; office, warehouse, and fleet-admin interfaces remain separate.
+
 ## Driver dashboard summary
 
 Call `GET /api/v1/driver/tasks/summary` to build the driver's home-screen counters without downloading the full task list. Optionally pass `driver_profile_id` to scope the summary to one linked active profile.
