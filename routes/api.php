@@ -51,6 +51,7 @@ Route::prefix('v1')->group(function (): void {
         Route::prefix('driver')->middleware('throttle:120,1')->group(function (): void {
             Route::get('/me', [DriverAppController::class, 'me']);
             Route::get('/vehicles', [DriverAppController::class, 'vehicles']);
+            Route::get('/tasks/summary', [DriverAppController::class, 'taskSummary']);
             Route::get('/tasks', [DriverAppController::class, 'tasks']);
             Route::get('/tasks/{task}', [DriverAppController::class, 'showTask']);
             Route::post('/tasks/{task}/events', [DriverAppController::class, 'updateTask']);
