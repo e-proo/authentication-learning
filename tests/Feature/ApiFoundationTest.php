@@ -29,4 +29,9 @@ class ApiFoundationTest extends TestCase
             ->assertJsonPath('modules.7', 'shipments')
             ->assertJsonStructure(['name', 'modules', 'status']);
     }
+
+    public function test_current_user_endpoint_requires_authentication(): void
+    {
+        $this->getJson('/api/v1/me')->assertUnauthorized();
+    }
 }
