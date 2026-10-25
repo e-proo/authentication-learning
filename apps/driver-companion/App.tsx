@@ -255,7 +255,7 @@ export default function App() {
   const isDetail = !(['today','route','tasks','cash','more'] as Screen[]).includes(screen);
 
   return <SafeAreaView style={S.safe}>
-    <StatusBar barStyle="light-content" backgroundColor={C.navy}/>
+    <StatusBar barStyle="light-content" />
     <View style={S.root}>
       <View style={S.topbar}>
         {isDetail && <Pressable onPress={() => go('more')} style={S.back}><Text style={S.backText}>→</Text></Pressable>}
