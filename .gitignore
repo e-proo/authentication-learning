@@ -27,3 +27,7 @@ Thumbs.db
 !storage/logs/.gitignore
 !storage/app/private/.gitignore
 !storage/app/public/.gitignore
+
+# Standalone frontend apps
+**/node_modules/
+apps/*/dist/
