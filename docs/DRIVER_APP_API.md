@@ -15,6 +15,7 @@ All endpoints require a valid Sanctum-authenticated user. Requests are additiona
 | GET | `/tasks/summary` | Return task counts by status and type for the linked active driver profile(s) |
 | GET | `/tasks` | List tasks assigned to the user's active driver profiles; supports `driver_profile_id`, `status`, `task_type`, and pagination |
 | GET | `/tasks/{task}` | Read one task only when assigned to a linked active profile |
+| GET | `/tasks/{task}/events` | Read paginated status and activity history for a task assigned to the linked active profile(s) |
 | POST | `/tasks/{task}/events` | Submit a supported task status transition |
 | GET | `/shifts/current` | Read active shifts for linked active driver profiles |
 | POST | `/shifts/start` | Start a shift for a linked active driver profile |
@@ -45,6 +46,10 @@ The task list accepts these optional query parameters:
 Example: `GET /api/v1/driver/tasks?status=assigned&task_type=last_mile&per_page=20`
 
 The response uses Laravel pagination metadata, so clients can request the next page without downloading every task at once. The service applies the driver-profile scope before filters, preventing these filters from widening access to another driver's tasks.
+
+## Task event history
+
+Call `GET /api/v1/driver/tasks/{task}/events` to retrieve the task's recorded event history. The endpoint verifies task assignment to a linked active driver profile before returning events and supports `driver_profile_id` and `per_page` (1–100, default 30). Events are returned newest first with pagination metadata.
 
 ## Task transition rules
 
