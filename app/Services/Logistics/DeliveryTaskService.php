@@ -361,6 +361,7 @@ class DeliveryTaskService
             'previous_status' => $previous,
             'status' => $status,
             'actor_user_id' => $actor->id,
+            'location' => $metadata['location'] ?? null,
             'notes' => $notes,
             'metadata' => $metadata ?: null,
             'occurred_at' => now(),
