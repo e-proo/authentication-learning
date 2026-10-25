@@ -81,7 +81,7 @@ class DriverPortalService
         return $profiles;
     }
 
-    public function tasksQuery(User $user, ?int $profileId = null, ?string $status = null): Builder
+    public function tasksQuery(User $user, ?int $profileId = null, ?string $status = null, ?string $taskType = null): Builder
     {
         $driverIds = $this->activeProfiles($user, $profileId)->pluck('id');
 
@@ -98,6 +98,10 @@ class DriverPortalService
 
         if ($status !== null) {
             $query->where('status', $status);
+        }
+
+        if ($taskType !== null) {
+            $query->where('task_type', $taskType);
         }
 
         return $query;
