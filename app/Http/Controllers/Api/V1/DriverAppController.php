@@ -70,6 +70,20 @@ class DriverAppController extends Controller
         ]);
     }
 
+    public function taskSummary(Request $request, DriverPortalService $drivers): JsonResponse
+    {
+        $validated = $request->validate([
+            'driver_profile_id' => ['nullable', 'integer'],
+        ]);
+
+        $summary = $drivers->taskSummary(
+            $this->user($request),
+            isset($validated['driver_profile_id']) ? (int) $validated['driver_profile_id'] : null,
+        );
+
+        return response()->json(['data' => $summary]);
+    }
+
     public function tasks(Request $request, DriverPortalService $drivers): JsonResponse
     {
         $user = $this->user($request);
