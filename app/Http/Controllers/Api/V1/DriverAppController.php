@@ -118,6 +118,38 @@ class DriverAppController extends Controller
         return response()->json(['data' => $drivers->presentTask($record)]);
     }
 
+    public function taskEvents(Request $request, string $task, DriverPortalService $drivers): JsonResponse
+    {
+        $validated = $request->validate([
+            'driver_profile_id' => ['nullable', 'integer'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $record = $drivers->findAssignedTask(
+            $this->user($request),
+            (int) $task,
+            isset($validated['driver_profile_id']) ? (int) $validated['driver_profile_id'] : null,
+        );
+
+        $events = $record->events()
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id')
+            ->paginate((int) ($validated['per_page'] ?? 30));
+
+        return response()->json([
+            'data' => $events->through(fn ($event): array => [
+                'id' => $event->id,
+                'event_type' => $event->event_type,
+                'previous_status' => $event->previous_status,
+                'status' => $event->status,
+                'location' => $event->location,
+                'notes' => $event->notes,
+                'metadata' => $event->metadata,
+                'occurred_at' => $event->occurred_at,
+            ]),
+        ]);
+    }
+
     public function updateTask(
         Request $request,
         string $task,
