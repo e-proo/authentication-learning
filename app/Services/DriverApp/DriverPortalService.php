@@ -14,6 +14,7 @@ use App\Services\Logistics\DeliveryTaskService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -179,10 +180,21 @@ class DriverPortalService
                 throw new HttpException(403, 'This task is no longer assigned to an active driver profile linked to your account.');
             }
 
-            if ($nextStatus === 'completed' && ! is_string($data['proof_reference'] ?? null)) {
-                throw ValidationException::withMessages([
-                    'proof_reference' => ['A proof reference is required to complete a custody task.'],
-                ]);
+            if ($nextStatus === 'completed') {
+                $proofReference = $data['proof_reference'] ?? $task->proof_reference;
+                $expectedPrefix = sprintf(
+                    'driver-evidence/%d/%d/',
+                    $task->organization_id,
+                    $task->id,
+                );
+
+                if (! is_string($proofReference)
+                    || ! str_starts_with($proofReference, $expectedPrefix)
+                    || ! Storage::disk('local')->exists($proofReference)) {
+                    throw ValidationException::withMessages([
+                        'proof_reference' => ['Upload valid evidence for this task before completing it.'],
+                    ]);
+                }
             }
 
             return $this->tasks->transition(
