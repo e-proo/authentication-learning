@@ -35,4 +35,9 @@ class FleetVehicle extends Model
     {
         return $this->hasMany(TransportTrip::class, 'vehicle_id');
     }
+
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(DriverShift::class, 'vehicle_id');
+    }
 }
