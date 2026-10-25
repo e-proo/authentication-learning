@@ -55,6 +55,7 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/tasks', [DriverAppController::class, 'tasks']);
             Route::get('/tasks/{task}', [DriverAppController::class, 'showTask']);
             Route::get('/tasks/{task}/events', [DriverAppController::class, 'taskEvents']);
+            Route::post('/tasks/{task}/evidence', [DriverAppController::class, 'uploadTaskEvidence']);
             Route::post('/tasks/{task}/events', [DriverAppController::class, 'updateTask']);
             Route::get('/shifts/current', [DriverAppController::class, 'currentShift']);
             Route::post('/shifts/start', [DriverAppController::class, 'startShift']);
