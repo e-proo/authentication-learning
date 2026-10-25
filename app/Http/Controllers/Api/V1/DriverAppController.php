@@ -76,13 +76,16 @@ class DriverAppController extends Controller
         $validated = $request->validate([
             'driver_profile_id' => ['nullable', 'integer'],
             'status' => ['nullable', Rule::in(['queued', 'assigned', 'en_route', 'arrived', 'completed', 'failed', 'cancelled'])],
+            'task_type' => ['nullable', Rule::in(['collection', 'hub_delivery', 'last_mile', 'return_pickup'])],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ]);
 
         $tasks = $drivers->tasksQuery(
             $user,
             isset($validated['driver_profile_id']) ? (int) $validated['driver_profile_id'] : null,
             $validated['status'] ?? null,
-        )->paginate(50);
+            $validated['task_type'] ?? null,
+        )->paginate((int) ($validated['per_page'] ?? 50));
 
         return response()->json([
             'data' => $tasks->through(fn ($task): array => $drivers->presentTask($task)),
