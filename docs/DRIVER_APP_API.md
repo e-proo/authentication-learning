@@ -16,10 +16,15 @@ All endpoints require a valid Sanctum-authenticated user. Requests are additiona
 | GET | `/tasks` | List tasks assigned to the user's active driver profiles; supports `driver_profile_id`, `status`, `task_type`, and pagination |
 | GET | `/tasks/{task}` | Read one task only when assigned to a linked active profile |
 | GET | `/tasks/{task}/events` | Read paginated status and activity history for a task assigned to the linked active profile(s) |
+| POST | `/tasks/{task}/evidence` | Upload private proof-of-delivery evidence for an active task |
 | POST | `/tasks/{task}/events` | Submit a supported task status transition |
 | GET | `/shifts/current` | Read active shifts for linked active driver profiles |
 | POST | `/shifts/start` | Start a shift for a linked active driver profile |
 | POST | `/shifts/{shift}/end` | End the authenticated user's active shift |
+
+## Standalone driver interface
+
+The independent Arabic RTL web client lives in `apps/driver-app`. See `apps/driver-app/README.md` for Node.js requirements and local run commands. It consumes only the `/api/v1/driver` API surface for driver operations; office, warehouse, and fleet-admin interfaces remain separate.
 
 ## Driver dashboard summary
 
@@ -57,7 +62,9 @@ The driver endpoint accepts only `en_route`, `arrived`, `completed`, or `failed`
 
 - The task is scoped to a linked, active driver profile before submitted details are validated.
 - Assignment is checked again inside a transaction with a row lock before applying the transition.
-- Completing a task requires a non-empty proof reference.
+- Upload evidence through `POST /tasks/{task}/evidence` using multipart form data (`file`, `evidence_type`, and optional `driver_profile_id`). Accepted file types are JPG, PNG, WEBP, and PDF, up to 10 MB.
+- Evidence is stored on the private local filesystem disk under a task- and organization-scoped directory; the API returns a `proof_reference`, not a public URL.
+- A driver cannot complete a task with an arbitrary text reference: the reference must point to an existing stored file in that exact task's evidence directory.
 - Completing a `last_mile` task also requires the recipient name.
 - A failed task requires a failure reason.
 - The task transition and its event/audit records are handled by the logistics domain service.
@@ -73,6 +80,6 @@ The driver endpoint accepts only `en_route`, `arrived`, `completed`, or `failed`
 
 ## Important limitations
 
-A `proof_reference` is a reference supplied to the API; it is **not** proof that a photo or signature was uploaded, verified, or retained. Before production, connect this field to a controlled evidence-upload service with integrity checks, access controls, and retention policy.
+The evidence endpoint verifies file type and size and stores evidence privately. Production deployment still needs an explicit retention/deletion policy, malware scanning, and an authorized evidence-view/download endpoint for dispatch or claims staff. The `evidence_type` label is user-declared metadata and does not cryptographically prove that a file is a signature or photograph.
 
 Driver-facing clients should use these endpoints as a separate application surface. Dispatching, fleet management, warehouse operations, and office workflows belong to their own role-specific interfaces.

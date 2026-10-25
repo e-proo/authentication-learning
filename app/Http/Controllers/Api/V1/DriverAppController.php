@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Services\DriverApp\DriverPortalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -148,6 +150,46 @@ class DriverAppController extends Controller
                 'occurred_at' => $event->occurred_at,
             ]),
         ]);
+    }
+
+    public function uploadTaskEvidence(Request $request, string $task, DriverPortalService $drivers): JsonResponse
+    {
+        $user = $this->user($request);
+        $validated = $request->validate([
+            'driver_profile_id' => ['nullable', 'integer'],
+            'evidence_type' => ['required', Rule::in(['photo', 'signature', 'document'])],
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
+        ]);
+
+        $record = $drivers->findAssignedTask(
+            $user,
+            (int) $task,
+            isset($validated['driver_profile_id']) ? (int) $validated['driver_profile_id'] : null,
+        );
+
+        if (! in_array($record->status, ['en_route', 'arrived'], true)) {
+            throw new HttpException(409, 'Evidence can only be uploaded for a task that is en route or has arrived.');
+        }
+
+        $file = $request->file('file');
+        $extension = strtolower($file->guessExtension() ?: 'bin');
+        $directory = sprintf('driver-evidence/%d/%d', $record->organization_id, $record->id);
+        $filename = Str::uuid().'.'.$extension;
+        $path = $file->storeAs($directory, $filename, 'local');
+
+        if (! is_string($path) || $path === '') {
+            throw new HttpException(500, 'The evidence file could not be stored securely.');
+        }
+
+        return response()->json([
+            'data' => [
+                'proof_reference' => $path,
+                'evidence_type' => $validated['evidence_type'],
+                'mime_type' => $file->getMimeType(),
+                'size_bytes' => $file->getSize(),
+                'uploaded_at' => now()->toISOString(),
+            ],
+        ], 201);
     }
 
     public function updateTask(
